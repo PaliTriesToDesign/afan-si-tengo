@@ -3,6 +3,14 @@ import { useRouter } from "../lib/router.jsx";
 import ManizalesMap from "../components/ManizalesMap.jsx";
 import { ChevronLeft } from "../components/Icons.jsx";
 import { useShareImage } from "../components/ShareImageCard.jsx";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faLocationDot,
+  faCompass,
+  faClock,
+  faPhone,
+  faCheck,
+} from "@fortawesome/free-solid-svg-icons";
 import { createPost, saveMyPost } from "../lib/firebase.js";
 import {
   shareOrDownloadImage,
@@ -265,7 +273,9 @@ function StepCategory({ value, onSelect }) {
             className={`option-card ${value === key ? "selected" : ""}`}
             onClick={() => onSelect(key)}
           >
-            <span className="option-icon">{cat.icon}</span>
+            <span className="option-icon">
+              <FontAwesomeIcon icon={cat.icon} />
+            </span>
             <span>{cat.label}</span>
           </button>
         ))}
@@ -497,29 +507,38 @@ function StepReview({ form, submitting, error, onSubmit }) {
       <div className="review-card">
         <p>
           <strong>
-            {CATEGORIES[form.category]?.icon} {CATEGORIES[form.category]?.label}
+            {CATEGORIES[form.category]?.icon && (
+              <FontAwesomeIcon icon={CATEGORIES[form.category].icon} />
+            )}{" "}
+            {CATEGORIES[form.category]?.label}
           </strong>
         </p>
         {form.category === "blood" && form.bloodTypes.length > 0 && (
-          <p>🩸 Tipo(s): {form.bloodTypes.join(", ")}</p>
+          <p>
+            <FontAwesomeIcon icon={CATEGORIES.blood.icon} /> Tipo(s): {form.bloodTypes.join(", ")}
+          </p>
         )}
         {combineDescription(form.items, form.description) && (
           <p>{combineDescription(form.items, form.description)}</p>
         )}
         <p>
-          📍 <span className="detail-label">Dirección:</span> {form.address}
+          <FontAwesomeIcon icon={faLocationDot} /> <span className="detail-label">Dirección:</span> {form.address}
         </p>
         {form.locationNote && (
           <p>
-            🧭 <span className="detail-label">Referencia:</span>{" "}
+            <FontAwesomeIcon icon={faCompass} /> <span className="detail-label">Referencia:</span>{" "}
             {form.locationNote}
           </p>
         )}
         <p>
-          ⏱ <span className="detail-label">Urgencia:</span>{" "}
+          <FontAwesomeIcon icon={faClock} /> <span className="detail-label">Urgencia:</span>{" "}
           {URGENCY_LEVELS[form.urgency]?.label}
         </p>
-        {form.contact && <p>📞 {form.contact}</p>}
+        {form.contact && (
+          <p>
+            <FontAwesomeIcon icon={faPhone} /> {form.contact}
+          </p>
+        )}
       </div>
       {error && <p className="field-error">{error}</p>}
       <button
@@ -617,7 +636,13 @@ function SuccessScreen({ result, onDone, onViewBoard }) {
                 className="secondary-button"
                 onClick={handleCopyLink}
               >
-                {linkCopied ? "Enlace copiado ✓" : "Copiar enlace"}
+                {linkCopied ? (
+                  <>
+                    Enlace copiado <FontAwesomeIcon icon={faCheck} />
+                  </>
+                ) : (
+                  "Copiar enlace"
+                )}
               </button>
             </div>
 

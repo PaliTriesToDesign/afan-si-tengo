@@ -3,6 +3,14 @@ import { useRouter } from "../lib/router.jsx";
 import { useAwarenessShareImage } from "../components/ShareImageCard.jsx";
 import { shareOrDownloadImage } from "../lib/share.js";
 import { ACTIVE_CITY } from "../lib/constants";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faLifeRing,
+  faHandshake,
+  faHandHoldingHeart,
+  faBullhorn,
+  faHandHoldingHand,
+} from "@fortawesome/free-solid-svg-icons";
 
 export default function Landing() {
   const { navigate } = useRouter();
@@ -48,7 +56,9 @@ export default function Landing() {
           className="big-button need"
           onClick={() => navigate("/necesito-ayuda")}
         >
-          <span className="big-button-icon">🆘</span>
+          <span className="big-button-icon">
+            <FontAwesomeIcon icon={faHandHoldingHand} />
+          </span>
           Necesito Ayuda
         </button>
 
@@ -57,7 +67,9 @@ export default function Landing() {
           className="big-button give"
           onClick={() => navigate("/quiero-ayudar")}
         >
-          <span className="big-button-icon">🤝</span>
+          <span className="big-button-icon">
+            <FontAwesomeIcon icon={faHandshake} />
+          </span>
           Quiero Ayudar
         </button>
 
@@ -66,7 +78,9 @@ export default function Landing() {
           className="big-button donate"
           onClick={() => navigate("/donar")}
         >
-          <span className="big-button-icon">💛</span>
+          <span className="big-button-icon">
+            <FontAwesomeIcon icon={faHandHoldingHeart} />
+          </span>
           Donar $
         </button>
       </div>
@@ -77,7 +91,13 @@ export default function Landing() {
         disabled={sharingAwareness}
         onClick={handleShareAwareness}
       >
-        {sharingAwareness ? "Generando…" : "📣 Comparte esta iniciativa"}
+        {sharingAwareness ? (
+          "Generando…"
+        ) : (
+          <>
+            <FontAwesomeIcon icon={faBullhorn} /> Comparte esta iniciativa
+          </>
+        )}
       </button>
     </div>
   );

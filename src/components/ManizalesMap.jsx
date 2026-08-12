@@ -4,8 +4,19 @@ import 'leaflet/dist/leaflet.css'
 import markerIcon from 'leaflet/dist/images/marker-icon.png'
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png'
 import markerShadow from 'leaflet/dist/images/marker-shadow.png'
+import { icon as faIcon } from '@fortawesome/fontawesome-svg-core'
+import { faLocationDot, faCompass, faPhone, faUsers } from '@fortawesome/free-solid-svg-icons'
 import { ACTIVE_CITY, CATEGORIES, URGENCY_LEVELS, POST_STATUS, STATUS_LABELS, HELPER_PING_EXPIRY_MS } from '../lib/constants'
 import { OFFICIAL_SITES, OFFICIAL_SITE_TYPES } from '../lib/officialSites'
+
+// Markers and popups here are built from raw HTML strings for Leaflet
+// (not JSX — Leaflet owns that DOM directly), so <FontAwesomeIcon>
+// can't be used. This renders the same icon defs to a standalone SVG
+// string instead — same source-of-truth icons, just a different
+// output format for this one file.
+function faSvg(iconDef) {
+  return faIcon(iconDef).html.join('')
+}
 
 // Vite-bundler fix for Leaflet's default marker icons, which
 // otherwise resolve to broken paths in a bundled build.
@@ -44,7 +55,7 @@ function categoryIcon(post) {
   const isCovered = post.status === POST_STATUS.COVERED
   return L.divIcon({
     className: `category-marker${isCovered ? ' category-marker-covered' : ''}`,
-    html: `<span class="category-marker-pin" style="background:${color}"><span class="category-marker-emoji">${cat?.icon || '📍'}</span></span>`,
+    html: `<span class="category-marker-pin" style="background:${color}"><span class="category-marker-emoji">${faSvg(cat?.icon || faLocationDot)}</span></span>`,
     iconSize: [32, 32],
     iconAnchor: [16, 32],
     popupAnchor: [0, -30],
@@ -220,17 +231,17 @@ function popupHtml(post) {
   return `
     <div class="map-popup">
       <div class="map-popup-header">
-        <span>${cat?.icon || '📍'} ${escapeHtml(cat?.label || '')}</span>
+        <span>${faSvg(cat?.icon || faLocationDot)} ${escapeHtml(cat?.label || '')}</span>
         ${urgency ? `<span class="map-popup-urgency" style="color:${urgency.color}">${escapeHtml(urgency.label)}</span>` : ''}
       </div>
-      ${post.status === POST_STATUS.IN_PROGRESS ? `<p class="map-popup-status">${STATUS_LABELS[POST_STATUS.IN_PROGRESS].icon} ${escapeHtml(STATUS_LABELS[POST_STATUS.IN_PROGRESS].label)}</p>` : ''}
-      ${post.status === POST_STATUS.COVERED ? `<p class="map-popup-status map-popup-status-covered">${STATUS_LABELS[POST_STATUS.COVERED].icon} ${escapeHtml(STATUS_LABELS[POST_STATUS.COVERED].label)}</p>` : ''}
-      ${post.bloodTypes?.length > 0 ? `<p class="map-popup-blood">🩸 Tipo: ${escapeHtml(post.bloodTypes.join(', '))}</p>` : ''}
+      ${post.status === POST_STATUS.IN_PROGRESS ? `<p class="map-popup-status">${faSvg(STATUS_LABELS[POST_STATUS.IN_PROGRESS].icon)} ${escapeHtml(STATUS_LABELS[POST_STATUS.IN_PROGRESS].label)}</p>` : ''}
+      ${post.status === POST_STATUS.COVERED ? `<p class="map-popup-status map-popup-status-covered">${faSvg(STATUS_LABELS[POST_STATUS.COVERED].icon)} ${escapeHtml(STATUS_LABELS[POST_STATUS.COVERED].label)}</p>` : ''}
+      ${post.bloodTypes?.length > 0 ? `<p class="map-popup-blood">${faSvg(CATEGORIES.blood.icon)} Tipo: ${escapeHtml(post.bloodTypes.join(', '))}</p>` : ''}
       <p>${escapeHtml(post.description || '')}</p>
-      ${post.location?.address ? `<p class="map-popup-address">📍 <span class="detail-label">Dirección:</span> ${escapeHtml(post.location.address)}</p>` : ''}
-      ${post.locationNote ? `<p class="map-popup-note">🧭 <span class="detail-label">Referencia:</span> ${escapeHtml(post.locationNote)}</p>` : ''}
-      ${post.contact ? `<p class="map-popup-contact">📞 ${escapeHtml(post.contact)}</p>` : ''}
-      ${activeHelpers > 0 ? `<p class="map-popup-helpers">🙋 ${activeHelpers === 1 ? '1 persona va' : `${activeHelpers} personas van`}</p>` : ''}
+      ${post.location?.address ? `<p class="map-popup-address">${faSvg(faLocationDot)} <span class="detail-label">Dirección:</span> ${escapeHtml(post.location.address)}</p>` : ''}
+      ${post.locationNote ? `<p class="map-popup-note">${faSvg(faCompass)} <span class="detail-label">Referencia:</span> ${escapeHtml(post.locationNote)}</p>` : ''}
+      ${post.contact ? `<p class="map-popup-contact">${faSvg(faPhone)} ${escapeHtml(post.contact)}</p>` : ''}
+      ${activeHelpers > 0 ? `<p class="map-popup-helpers">${faSvg(faUsers)} ${activeHelpers === 1 ? '1 persona va' : `${activeHelpers} personas van`}</p>` : ''}
     </div>
   `
 }

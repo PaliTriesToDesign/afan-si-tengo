@@ -1,3 +1,13 @@
+import {
+  faBoxOpen,
+  faPeopleCarryBox,
+  faHouse,
+  faDroplet,
+  faCircle,
+  faWrench,
+  faCircleCheck,
+} from "@fortawesome/free-solid-svg-icons";
+
 // ============================================================
 // City config — add another city here later by giving it the
 // same shape (label, center, zoom, viewbox). Everything that
@@ -32,10 +42,16 @@ export const ACTIVE_CITY = CITIES[ACTIVE_CITY_KEY];
 // anything specific (a size, a quantity, a medical detail) still goes
 // in as free text alongside the selected chips. See the "Need Help
 // item chips decision" — chips assist, they don't gate the field.
+// Icons here are the "main feature" set — FontAwesome for now, but
+// these four (plus the landing page's need/give/donate buttons,
+// which reuse volunteer/blood-adjacent icons) are the ones flagged
+// to eventually become custom pixel-art sprites. Every render site
+// reads from this one object, so swapping FontAwesome -> pixel art
+// later is a change here, not a hunt through every page.
 export const CATEGORIES = {
   supplies: {
     label: "Suministros",
-    icon: "📦",
+    icon: faBoxOpen,
     items: [
       "Agua",
       "Comida",
@@ -50,7 +66,11 @@ export const CATEGORIES = {
   },
   volunteer: {
     label: "Voluntariado / mano de obra",
-    icon: "🤝",
+    // Deliberately not faHandshake — that's already ACTION_ICONS.helperPing
+    // (see lib/icons.js), and a volunteer-category post shows both icons
+    // on the same card, so reusing it would put two identical icons with
+    // different meanings side by side.
+    icon: faPeopleCarryBox,
     items: [
       "Remover escombros",
       "Transporte",
@@ -63,7 +83,7 @@ export const CATEGORIES = {
   },
   housing: {
     label: "Alojamiento temporal",
-    icon: "🏠",
+    icon: faHouse,
     items: [
       "Para 1 persona",
       "Para una familia",
@@ -79,7 +99,7 @@ export const CATEGORIES = {
   // type before continuing.
   blood: {
     label: "Sangre",
-    icon: "🩸",
+    icon: faDroplet,
     descriptionPlaceholder: "Ej: cantidad de unidades, para qué procedimiento, plazo…",
   },
 };
@@ -112,10 +132,10 @@ export const POST_STATUS = {
 // suficiente" votes (see below), not poster-confirmed, so it's kept
 // reversible and visually distinct from a real "Resuelta".
 export const STATUS_LABELS = {
-  [POST_STATUS.OPEN]: { label: "Abierta", icon: "🟢" },
-  [POST_STATUS.IN_PROGRESS]: { label: "En proceso", icon: "🔧" },
-  [POST_STATUS.COVERED]: { label: "Posiblemente cubierta", icon: "✅" },
-  [POST_STATUS.RESOLVED]: { label: "Resuelta", icon: "✅" },
+  [POST_STATUS.OPEN]: { label: "Abierta", icon: faCircle },
+  [POST_STATUS.IN_PROGRESS]: { label: "En proceso", icon: faWrench },
+  [POST_STATUS.COVERED]: { label: "Posiblemente cubierta", icon: faCircleCheck },
+  [POST_STATUS.RESOLVED]: { label: "Resuelta", icon: faCircleCheck },
 };
 
 // ============================================================

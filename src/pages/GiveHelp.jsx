@@ -2,6 +2,8 @@ import { useEffect, useState, useRef } from 'react'
 import { useRouter } from '../lib/router.jsx'
 import ManizalesMap from '../components/ManizalesMap.jsx'
 import { ChevronLeft } from '../components/Icons.jsx'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faHandHoldingHeart, faLocationDot, faCompass, faPhone } from '@fortawesome/free-solid-svg-icons'
 import OfficialSitesList from '../components/OfficialSitesList.jsx'
 import IconLegend from '../components/IconLegend.jsx'
 import ReportButton from '../components/ReportButton.jsx'
@@ -99,7 +101,7 @@ export default function GiveHelp() {
           <ChevronLeft /> Atrás
         </button>
         <button type="button" className="donate-link-button" onClick={() => navigate('/donar')}>
-          💛 Donar
+          <FontAwesomeIcon icon={faHandHoldingHeart} /> Donar
         </button>
       </div>
       <h2>Quiero Ayudar</h2>
@@ -110,7 +112,10 @@ export default function GiveHelp() {
         <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)}>
           <option value="all">Todas las categorías</option>
           {Object.entries(CATEGORIES).map(([key, cat]) => (
-            <option key={key} value={key}>{cat.icon} {cat.label}</option>
+            // Native <option> only ever renders plain text — no SVG/icon
+            // markup survives inside it, even though emoji (plain
+            // unicode characters) used to work here for that reason.
+            <option key={key} value={key}>{cat.label}</option>
           ))}
         </select>
         <select value={urgencyFilter} onChange={(e) => setUrgencyFilter(e.target.value)}>
@@ -159,31 +164,47 @@ export default function GiveHelp() {
               >
                 <div className="post-card-content">
                   <div className="post-card-header">
-                    <span className="option-icon">{CATEGORIES[post.category]?.icon}</span>
+                    <span className="option-icon">
+                      {CATEGORIES[post.category]?.icon && (
+                        <FontAwesomeIcon icon={CATEGORIES[post.category].icon} />
+                      )}
+                    </span>
                     <span>{CATEGORIES[post.category]?.label}</span>
                     <span className={`urgency-badge urgency-${post.urgency}`}>
                       {URGENCY_LEVELS[post.urgency]?.label}
                     </span>
                     {post.category === 'blood' && post.bloodTypes?.length > 0 && (
-                      <span className="blood-type-badge">🩸 {post.bloodTypes.join(', ')}</span>
+                      <span className="blood-type-badge">
+                        <FontAwesomeIcon icon={CATEGORIES.blood.icon} /> {post.bloodTypes.join(', ')}
+                      </span>
                     )}
                   </div>
                   {post.status === POST_STATUS.IN_PROGRESS && (
                     <span className="status-badge status-in-progress">
-                      {STATUS_LABELS[POST_STATUS.IN_PROGRESS].icon} {STATUS_LABELS[POST_STATUS.IN_PROGRESS].label}
+                      <FontAwesomeIcon icon={STATUS_LABELS[POST_STATUS.IN_PROGRESS].icon} />{' '}
+                      {STATUS_LABELS[POST_STATUS.IN_PROGRESS].label}
                     </span>
                   )}
                   {isCovered && (
                     <span className="status-badge status-covered">
-                      {STATUS_LABELS[POST_STATUS.COVERED].icon} {STATUS_LABELS[POST_STATUS.COVERED].label}
+                      <FontAwesomeIcon icon={STATUS_LABELS[POST_STATUS.COVERED].icon} />{' '}
+                      {STATUS_LABELS[POST_STATUS.COVERED].label}
                     </span>
                   )}
                   <p>{post.description}</p>
-                  <p className="post-location">📍 <span className="detail-label">Dirección:</span> {post.location?.address}</p>
+                  <p className="post-location">
+                    <FontAwesomeIcon icon={faLocationDot} /> <span className="detail-label">Dirección:</span> {post.location?.address}
+                  </p>
                   {post.locationNote && (
-                    <p className="post-location-note">🧭 <span className="detail-label">Referencia:</span> {post.locationNote}</p>
+                    <p className="post-location-note">
+                      <FontAwesomeIcon icon={faCompass} /> <span className="detail-label">Referencia:</span> {post.locationNote}
+                    </p>
                   )}
-                  {post.contact && <p className="post-contact">📞 {post.contact}</p>}
+                  {post.contact && (
+                    <p className="post-contact">
+                      <FontAwesomeIcon icon={faPhone} /> {post.contact}
+                    </p>
+                  )}
                 </div>
 
                 <div className="action-rail">

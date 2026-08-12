@@ -3,6 +3,13 @@ import { toPng } from "html-to-image";
 import QRCode from "qrcode";
 import { CATEGORIES, URGENCY_LEVELS, ACTIVE_CITY } from "../lib/constants";
 import { postShareUrl } from "../lib/share.js";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faClock,
+  faLocationDot,
+  faCompass,
+  faPhone,
+} from "@fortawesome/free-solid-svg-icons";
 
 // Instagram/WhatsApp Story dimensions.
 const CARD_WIDTH = 1080;
@@ -98,7 +105,9 @@ export function useShareImage() {
 
             <div className="share-card-category">
               <span className="share-card-icon">
-                {CATEGORIES[post.category]?.icon}
+                {CATEGORIES[post.category]?.icon && (
+                  <FontAwesomeIcon icon={CATEGORIES[post.category].icon} />
+                )}
               </span>
               <span>{CATEGORIES[post.category]?.label}</span>
             </div>
@@ -107,7 +116,8 @@ export function useShareImage() {
               className="share-card-urgency"
               style={{ background: URGENCY_LEVELS[post.urgency]?.color }}
             >
-              ⏱ {URGENCY_LEVELS[post.urgency]?.label}
+              <FontAwesomeIcon icon={faClock} />{" "}
+              {URGENCY_LEVELS[post.urgency]?.label}
             </div>
 
             {/* Blood type is the one piece of info that has to land in
@@ -117,9 +127,14 @@ export function useShareImage() {
                 description paragraph with everything else. */}
             {post.bloodTypes?.length > 0 && (
               <div className="share-card-blood-type">
-                🩸 Tipo {post.bloodTypes.join(" / ")}
+                <FontAwesomeIcon icon={CATEGORIES.blood.icon} /> Tipo{" "}
+                {post.bloodTypes.join(" / ")}
               </div>
             )}
+
+            <p className="share-card-date">
+              Publicado el {formatDateEs(postedAt || new Date())}
+            </p>
 
             <h2 className="share-card-headline">
               Se necesita ayuda en {ACTIVE_CITY.label}
@@ -133,18 +148,21 @@ export function useShareImage() {
                 + value on each line, same three-part pattern as the
                 review card's .detail-label. */}
             <p className="share-card-address">
-              📍 <span className="share-card-label">Dirección:</span>{" "}
+              <FontAwesomeIcon icon={faLocationDot} />{" "}
+              <span className="share-card-label">Dirección:</span>{" "}
               {post.location?.address}
             </p>
             {post.locationNote && (
               <p className="share-card-note">
-                🧭 <span className="share-card-label">Referencia:</span>{" "}
+                <FontAwesomeIcon icon={faCompass} />{" "}
+                <span className="share-card-label">Referencia:</span>{" "}
                 {post.locationNote}
               </p>
             )}
             {post.contact && (
               <p className="share-card-contact">
-                📞 <span className="share-card-label">Contacto:</span>{" "}
+                <FontAwesomeIcon icon={faPhone} />{" "}
+                <span className="share-card-label">Contacto:</span>{" "}
                 {post.contact}
               </p>
             )}
@@ -164,9 +182,6 @@ export function useShareImage() {
             {/* Lowest-priority fact on the card — when it was posted
                 matters far less than what/where/how, so it's pushed
                 to the bottom in the smallest, most muted text. */}
-            <p className="share-card-date">
-              Publicado el {formatDateEs(postedAt || new Date())}
-            </p>
 
             <p className="share-card-trust">
               Confía en tu gente. En momentos así, siempre hay un vecino cerca

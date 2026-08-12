@@ -3,6 +3,15 @@ import { useRouter } from '../lib/router.jsx'
 import { getPost, markPostResolved, markPostInProgress, markPostOpen } from '../lib/firebase.js'
 import { useShareImage } from '../components/ShareImageCard.jsx'
 import { ChevronLeft } from '../components/Icons.jsx'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import {
+  faLocationDot,
+  faCompass,
+  faClock,
+  faUsers,
+  faCircleCheck,
+  faTriangleExclamation,
+} from '@fortawesome/free-solid-svg-icons'
 import { shareOrDownloadImage, buildShareCaption, postShareUrl } from '../lib/share.js'
 import {
   CATEGORIES,
@@ -117,31 +126,54 @@ export default function ManagePost() {
 
       {post && isOwner && (
         <div className="review-card">
-          <p><strong>{CATEGORIES[post.category]?.icon} {CATEGORIES[post.category]?.label}</strong></p>
-          {post.bloodTypes?.length > 0 && <p>🩸 Tipo: {post.bloodTypes.join(', ')}</p>}
-          <p>{post.description}</p>
-          <p>📍 <span className="detail-label">Dirección:</span> {post.location?.address}</p>
-          {post.locationNote && (
-            <p>🧭 <span className="detail-label">Referencia:</span> {post.locationNote}</p>
-          )}
-          <p>⏱ <span className="detail-label">Urgencia:</span> {URGENCY_LEVELS[post.urgency]?.label}</p>
           <p>
-            Estado: {STATUS_LABELS[post.status]?.icon} {STATUS_LABELS[post.status]?.label}
+            <strong>
+              {CATEGORIES[post.category]?.icon && (
+                <FontAwesomeIcon icon={CATEGORIES[post.category].icon} />
+              )}{' '}
+              {CATEGORIES[post.category]?.label}
+            </strong>
+          </p>
+          {post.bloodTypes?.length > 0 && (
+            <p>
+              <FontAwesomeIcon icon={CATEGORIES.blood.icon} /> Tipo: {post.bloodTypes.join(', ')}
+            </p>
+          )}
+          <p>{post.description}</p>
+          <p>
+            <FontAwesomeIcon icon={faLocationDot} /> <span className="detail-label">Dirección:</span> {post.location?.address}
+          </p>
+          {post.locationNote && (
+            <p>
+              <FontAwesomeIcon icon={faCompass} /> <span className="detail-label">Referencia:</span> {post.locationNote}
+            </p>
+          )}
+          <p>
+            <FontAwesomeIcon icon={faClock} /> <span className="detail-label">Urgencia:</span> {URGENCY_LEVELS[post.urgency]?.label}
+          </p>
+          <p>
+            Estado: {STATUS_LABELS[post.status]?.icon && (
+              <FontAwesomeIcon icon={STATUS_LABELS[post.status].icon} />
+            )}{' '}
+            {STATUS_LABELS[post.status]?.label}
           </p>
           {activeHelpers > 0 && (
             <p className="helper-count-owner">
-              🙋 {activeHelpers === 1 ? '1 persona avisó que va' : `${activeHelpers} personas avisaron que van`}
+              <FontAwesomeIcon icon={faUsers} />{' '}
+              {activeHelpers === 1 ? '1 persona avisó que va' : `${activeHelpers} personas avisaron que van`}
             </p>
           )}
           {activeCoveredVotes > 0 && post.status !== POST_STATUS.COVERED && (
             <p className="helper-count-owner">
-              ✅ {activeCoveredVotes} {activeCoveredVotes === 1 ? 'voto dice' : 'votos dicen'} que ya tienen
+              <FontAwesomeIcon icon={faCircleCheck} />{' '}
+              {activeCoveredVotes} {activeCoveredVotes === 1 ? 'voto dice' : 'votos dicen'} que ya tienen
               suficiente (se marca cubierta automáticamente con 3)
             </p>
           )}
           {activeStillNeededVotes > 0 && post.status === POST_STATUS.COVERED && (
             <p className="helper-count-owner">
-              ⚠️ {activeStillNeededVotes} {activeStillNeededVotes === 1 ? 'voto dice' : 'votos dicen'} que
+              <FontAwesomeIcon icon={faTriangleExclamation} />{' '}
+              {activeStillNeededVotes} {activeStillNeededVotes === 1 ? 'voto dice' : 'votos dicen'} que
               todavía se necesita ayuda (se reabre automáticamente con 2)
             </p>
           )}

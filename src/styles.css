@@ -648,6 +648,12 @@ textarea {
   line-height: 1;
 }
 
+.category-marker-emoji svg {
+  width: 15px;
+  height: 15px;
+  color: #fff;
+}
+
 .category-marker-covered {
   opacity: 0.55;
   filter: grayscale(0.5);
@@ -732,6 +738,19 @@ textarea {
 
 .map-popup-status-covered {
   color: #4b5c3f;
+}
+
+/* Icons are raw SVG markup (see faSvg() in ManizalesMap.jsx) rather
+   than React elements — Leaflet popups/markers are built from HTML
+   strings, not JSX, so FontAwesomeIcon can't render there directly. */
+.map-popup svg,
+.category-marker-emoji svg {
+  vertical-align: -1px;
+}
+
+.map-popup svg {
+  width: 12px;
+  height: 12px;
 }
 
 .map-popup-helpers {
