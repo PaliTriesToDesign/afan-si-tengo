@@ -1,0 +1,1668 @@
+/* ============================================================
+   Space Grotesk — headings and primary actions only. Self-hosted
+   (3 static weights, ~13KB each) so there's no external font
+   request on a bad connection. Body text stays on the system
+   stack below for speed and familiarity.
+   ============================================================ */
+@font-face {
+  font-family: "Space Grotesk";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("./assets/fonts/space-grotesk-latin-500-normal.woff2")
+    format("woff2");
+}
+
+@font-face {
+  font-family: "Space Grotesk";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("./assets/fonts/space-grotesk-latin-600-normal.woff2")
+    format("woff2");
+}
+
+@font-face {
+  font-family: "Space Grotesk";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("./assets/fonts/space-grotesk-latin-700-normal.woff2")
+    format("woff2");
+}
+
+/* ============================================================
+   Placeholder palette — swap these variables for real branding
+   (pixel-art assets, logo, colors) later without touching any
+   component. Kept neutral and high-contrast on purpose for now.
+   ============================================================ */
+:root {
+  --color-bg: #1c1a24;
+  --color-surface: #26212f;
+  --color-text: #f4efe6;
+  --color-text-muted: #b7b1c4;
+  --color-border: #3a3448;
+  /* Primary flips to the light color in a dark theme — it's the
+     bright "selected/active" accent (dots, chips, focus rings),
+     not a dark ink. --on-primary is the text color for anything
+     filled with it. */
+  --color-primary: #f4efe6;
+  --on-primary: #1c1a24;
+  --color-need: #c1440e;
+  --color-give: #2f6f4f;
+  /* Brighter variants for when a category color sits as *text* on
+     the dark page background rather than as a solid button fill —
+     the base hues are too dark to pass contrast on their own. */
+  --color-give-text: #74c79a;
+  --color-donate: #b8860b;
+  --color-danger: #b3261e;
+  --color-danger-text: #ef7a72;
+  /* One consistent color for every OFFICIAL_SITES marker/legend
+     swatch — not per-type, so a single "Sitio oficial" legend entry
+     always matches every pin on the map (see .official-marker-pin
+     and .map-legend-square below). */
+  --color-official: #2a5a8c;
+
+  /* Neon variants — landing page buttons only. Kept separate from
+     the base category colors above (which stay muted for map pins,
+     badges, etc.) so this stays scoped to one place instead of
+     brightening the whole app's category palette. */
+  --color-need-neon: #ff5a36;
+  --color-give-neon: #2ee6a6;
+  --color-donate-neon: #ffc93c;
+
+  /* Bold-contrast shape scale: small controls stay tight and
+     precise, primary actions go full pill so the most urgent
+     buttons (Necesito Ayuda, form submits) read as unmistakably
+     different from everything else on the page. */
+  --radius-sm: 8px;
+  --radius-md: 16px;
+  --radius-lg: 999px;
+  --radius: var(--radius-md); /* kept for any lingering references */
+
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.3), 0 4px 10px rgba(0, 0, 0, 0.35);
+  /* Hard, offset "pressed block" shadow — no blur — reserved for
+     primary CTAs. Solid color rather than translucent black, since
+     a low-alpha shadow barely shows against an already-dark page. */
+  --shadow-cta: 3px 3px 0 #100e15;
+
+  --font-heading:
+    "Space Grotesk", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    sans-serif;
+  --tap-min: 48px;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial,
+    sans-serif;
+  /* Tells the browser to use dark-mode chrome for native controls
+     (select dropdowns, checkboxes, scrollbars) it draws itself —
+     without this they default to light-mode chrome and clash. */
+  color-scheme: dark;
+}
+
+/* Nesting rule for later: when a child sits flush against a padded
+   card's corner (e.g. an image inset only by the card's own padding),
+   keep corners concentric — child-radius = max(parent-radius - inset, 0).
+   Nothing currently does this (pills are radius-exempt at any inset;
+   today's cards only wrap text and pill controls) — apply it the day
+   a boxy child (e.g. the optional post photo, if it comes back) gets
+   nested directly inside a card. */
+
+* {
+  box-sizing: border-box;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-heading);
+  letter-spacing: -0.01em;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-text);
+  line-height: 1.4;
+  -webkit-tap-highlight-color: transparent;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+.app-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-footer {
+  margin-top: auto;
+  padding: 12px 16px;
+  text-align: center;
+  background: var(--color-surface);
+  border-top: 1px solid var(--color-border);
+}
+
+.footer-links {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.footer-link {
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  font-size: 12px;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 4px 2px;
+}
+
+.footer-link-sep {
+  color: var(--color-border);
+  font-size: 12px;
+}
+
+.emergency-notice {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+/* ============================================================
+   Landing
+   ============================================================ */
+.landing {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px;
+  text-align: center;
+  gap: 8px;
+}
+
+.brand-placeholder {
+  width: 72px;
+  height: 72px;
+  border-radius: 20px;
+  background: var(--color-border);
+  margin-bottom: 8px;
+}
+
+.landing h1 {
+  margin: 0;
+  font-size: 28px;
+}
+
+.landing-subtitle {
+  color: var(--color-text-muted);
+  margin: 0 0 24px;
+  max-width: 320px;
+}
+
+.landing-buttons {
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.share-app-link {
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  font-size: 14px;
+  padding: 8px 0;
+  margin-top: 12px;
+  cursor: pointer;
+  min-height: var(--tap-min);
+}
+
+.share-app-link:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.big-button {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  padding: 16px 20px;
+  border: none;
+  /* Same radius as cards (--radius-md) rather than a full pill —
+     reads as one system with the rest of the app instead of the
+     landing buttons being their own, more exaggerated shape. */
+  border-radius: var(--radius-md);
+  font-family: var(--font-heading);
+  font-size: 19px;
+  font-weight: 600;
+  cursor: pointer;
+  min-height: 64px;
+  transition:
+    transform 0.1s ease,
+    box-shadow 0.1s ease;
+}
+
+.big-button:active {
+  /* A soft glow has no direction to "press into" the way the old
+     hard offset shadow did, so the tactile cue is a scale-down
+     instead of a translate. */
+  transform: scale(0.97);
+  box-shadow: none;
+}
+
+/* Fixed-size icon "chip" — today holds an emoji at a large size,
+   later swaps for a pixel-art sprite (e.g. 32px, image-rendering:
+   pixelated keeps it crisp instead of browser-smoothed) without
+   any layout change. Slightly squared corners read as a distinct,
+   deliberate shape against the pill-shaped button around it. */
+.big-button-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.16);
+  font-size: 24px;
+  image-rendering: pixelated;
+}
+
+.big-button.need {
+  background: var(--color-need-neon);
+  color: var(--color-text);
+  box-shadow:
+    0 0 24px rgba(255, 90, 54, 0.45),
+    0 0 3px rgba(255, 90, 54, 0.6);
+}
+
+/* Give/donate rest as "empty" outlines — page-colored fill, white
+   border and text, so "Necesito Ayuda" (the only one that's filled)
+   reads as the one main action and these two stay clearly secondary.
+   They only fill in with their neon color on hover/press/focus.
+   :active is included alongside :hover so the reveal still happens
+   on tap, since most people here are on phones and will never
+   trigger a mouse :hover at all. */
+.big-button.give {
+  background: var(--color-bg);
+  color: var(--color-text);
+  border: 2px solid var(--color-text);
+  box-shadow: none;
+}
+
+.big-button.give:is(:hover, :active, :focus-visible) {
+  background: var(--color-give-neon);
+  /* Dark ink from the same hue, not plain black — the light-fill
+     text pairing already used on chips/primary-button, extended
+     to a colored fill instead of the neutral one. */
+  color: #12261e;
+  border-color: transparent;
+  box-shadow:
+    0 0 24px rgba(46, 230, 166, 0.4),
+    0 0 3px rgba(46, 230, 166, 0.6);
+}
+
+.big-button.donate {
+  background: var(--color-bg);
+  color: var(--color-text);
+  border: 2px solid var(--color-text);
+  box-shadow: none;
+}
+
+.big-button.donate:is(:hover, :active, :focus-visible) {
+  background: var(--color-donate-neon);
+  color: #2b2107;
+  border-color: transparent;
+  box-shadow:
+    0 0 24px rgba(255, 201, 60, 0.4),
+    0 0 3px rgba(255, 201, 60, 0.6);
+}
+
+/* Resting state: give/donate sit on the dark page background, so
+   the icon chip keeps the same translucent-white overlay as need's.
+   Only once they fill in with their bright neon color (hover/press/
+   focus) does the chip need to flip to translucent-black to stay
+   visible against that much lighter background. */
+.big-button.give:is(:hover, :active, :focus-visible) .big-button-icon,
+.big-button.donate:is(:hover, :active, :focus-visible) .big-button-icon {
+  background: rgba(0, 0, 0, 0.14);
+}
+
+/* ============================================================
+   Flow pages (Need Help / Give Help / Donate / Manage)
+   ============================================================ */
+.flow-page {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 16px;
+  width: 100%;
+  flex: 1;
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  font-size: 15px;
+  padding: 8px 0;
+  cursor: pointer;
+  min-height: var(--tap-min);
+}
+
+/* Reuses .page-header-row (already the back-link + lang-toggle row
+   on Donate.jsx) as the shell for a top-right "Donar" shortcut on
+   other flow pages — Give Help today, since browsing to help is a
+   natural moment to also consider donating instead/as well. */
+.donate-link-button {
+  background: none;
+  border: 1px solid var(--color-donate);
+  color: var(--color-donate);
+  border-radius: var(--radius-lg);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 6px 14px;
+  cursor: pointer;
+  min-height: 36px;
+}
+
+.progress-dots {
+  display: flex;
+  gap: 8px;
+  margin: 4px 0 20px;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-border);
+}
+
+.dot.active {
+  background: var(--color-primary);
+}
+
+.step h2 {
+  margin: 0 0 4px;
+  font-size: 22px;
+}
+
+.step-hint {
+  color: var(--color-text-muted);
+  font-size: 14px;
+  margin: 0 0 16px;
+}
+
+.field-label {
+  display: block;
+  font-size: 14px;
+  color: var(--color-text-muted);
+  margin: 16px 0 8px;
+}
+
+/* Inline "Dirección:"/"Referencia:"/"Urgencia:" labels next to the
+   location/time icons — muted + semibold so the label recedes and
+   the actual value still reads as the important part. */
+.detail-label {
+  color: var(--color-text-muted);
+  font-weight: 600;
+}
+
+.field-error {
+  color: var(--color-danger-text);
+  font-size: 14px;
+}
+
+input[type="text"],
+input[type="tel"],
+input[type="file"],
+textarea,
+select {
+  width: 100%;
+  padding: 14px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  min-height: var(--tap-min);
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--color-text-muted);
+  opacity: 1;
+}
+
+textarea {
+  min-height: 110px;
+  resize: vertical;
+}
+
+.primary-button {
+  width: 100%;
+  padding: 16px;
+  margin-top: 20px;
+  border: none;
+  border-radius: var(--radius-lg);
+  background: var(--color-primary);
+  color: var(--on-primary);
+  font-family: var(--font-heading);
+  font-size: 17px;
+  font-weight: 600;
+  cursor: pointer;
+  min-height: var(--tap-min);
+  text-align: center;
+  text-decoration: none;
+  display: block;
+  box-shadow: var(--shadow-cta);
+  transition:
+    transform 0.1s ease,
+    box-shadow 0.1s ease;
+}
+
+.primary-button:active {
+  transform: translate(3px, 3px);
+  box-shadow: none;
+}
+
+.primary-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.secondary-button {
+  width: 100%;
+  padding: 14px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  font-size: 15px;
+  cursor: pointer;
+  min-height: var(--tap-min);
+  /* Also gets used on <a> elements (download links) — without these,
+     an anchor renders inline/underlined/left-aligned instead of
+     matching the button-rendered instances of this same class. */
+  text-align: center;
+  text-decoration: none;
+  display: block;
+  color: inherit;
+}
+
+/* Category / urgency pickers */
+.option-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+.option-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 20px;
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-card);
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  min-height: 96px;
+}
+
+.option-card.selected {
+  border-color: var(--color-primary);
+}
+
+.option-icon {
+  font-size: 30px;
+}
+
+.option-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.option-row {
+  padding: 16px;
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  font-size: 16px;
+  text-align: left;
+  cursor: pointer;
+  min-height: var(--tap-min);
+}
+
+.option-row.selected {
+  border-color: var(--color-primary);
+  font-weight: 600;
+}
+
+/* Quick-fill item chips (StepDescription) — assist the free-text
+   field, never replace it. Multi-select, so no radio-style exclusivity. */
+.chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.chip {
+  padding: 10px 16px;
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  min-height: var(--tap-min);
+}
+
+.chip.selected {
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+  color: var(--on-primary);
+  font-weight: 600;
+}
+
+.review-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-card);
+  padding: 16px;
+}
+
+.review-card p {
+  margin: 8px 0;
+}
+
+/* Map */
+.manizales-map {
+  margin: 8px 0;
+}
+
+.map-container {
+  width: 100%;
+  border-radius: var(--radius);
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+}
+
+.map-hint {
+  font-size: 13px;
+  color: var(--color-text-muted);
+  margin: 6px 0 0;
+}
+
+/* Teardrop pin, rotated square + rotated-back emoji is the classic
+   CSS trick for a map-pin shape without an image asset. Color is
+   set inline per-marker (urgency), so this just handles geometry. */
+.category-marker-pin {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  border: 2px solid #fff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.45);
+}
+
+.category-marker-emoji {
+  transform: rotate(45deg);
+  font-size: 15px;
+  line-height: 1;
+}
+
+.category-marker-covered {
+  opacity: 0.55;
+  filter: grayscale(0.5);
+}
+
+/* OFFICIAL_SITES marker — square with rounded corners (vs. the round
+   teardrop pins above), so it reads as "official reference point" at
+   a glance rather than a community posting. One flat color for every
+   site (--color-official), not per-type — no icon inside, kept as
+   plain as the legend swatch it matches. */
+.official-marker-pin {
+  display: block;
+  width: 18px;
+  height: 18px;
+  background: var(--color-official);
+  border-radius: 5px;
+  border: 2px solid #fff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.45);
+}
+
+.map-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 8px;
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+.map-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.map-legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+/* Matches .official-marker-pin exactly (same shape, same
+   --color-official) — one swatch, one color, one meaning. */
+.map-legend-square {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  background: var(--color-official);
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.map-popup {
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.map-popup-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.map-popup p {
+  margin: 4px 0;
+}
+
+.map-popup-status {
+  color: #2a5a8c;
+  font-weight: 600;
+}
+
+.map-popup-blood {
+  color: var(--color-danger);
+  font-weight: 700;
+}
+
+.map-popup-status-covered {
+  color: #4b5c3f;
+}
+
+.map-popup-helpers {
+  /* Fixed dark tone, not var(--color-text-muted) — Leaflet popups
+     render on their own white background regardless of app theme,
+     and the muted token is calibrated for the dark page instead. */
+  color: #5c5666;
+}
+
+/* Same reason as .map-popup-helpers above: this popup always sits
+   on a white background, so its label needs a fixed dark color
+   rather than the theme's (light, dark-page-calibrated) muted token. */
+.map-popup .detail-label {
+  color: #5c5666;
+}
+
+/* OFFICIAL_SITES popup — title, address, links only, no status/
+   action styling since these cards are purely informational. */
+.official-popup {
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.official-popup-title {
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+
+.official-popup-type {
+  color: #5c5666;
+  margin: 0 0 4px;
+}
+
+.official-popup p {
+  margin: 4px 0;
+}
+
+.official-popup-links {
+  display: flex;
+  gap: 14px;
+  margin-top: 6px;
+}
+
+.official-popup-links a {
+  color: #2a5a8c;
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+/* Success screen (after posting a need) */
+.success-screen {
+  text-align: center;
+}
+
+/* Used on ManagePost's simpler re-share screen. */
+.share-preview {
+  margin: 16px 0;
+}
+
+.share-preview img {
+  border-radius: var(--radius);
+  border: 1px solid var(--color-border);
+  margin-bottom: 12px;
+  max-height: 480px;
+  width: auto;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.share-preview-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.share-preview-actions .primary-button,
+.share-preview-actions .secondary-button {
+  margin-top: 0;
+}
+
+/* Mobile: image stacked above a single centered column of action
+   groups. Desktop (see media query below): image left, all actions
+   right — see .success-screen-page / .success-screen-layout. */
+/* .flow-page already gets flex: 1 from the app shell, so this just
+   centers the card within whatever vertical space that leaves
+   between nothing above it and the footer below — same pattern as
+   .landing's justify-content: center. */
+.success-screen-page {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.trust-message {
+  color: var(--color-give-text);
+  font-size: 14px;
+  margin: 4px 0 0;
+}
+
+.success-screen-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  margin-top: 16px;
+}
+
+.success-screen-share-image {
+  border-radius: var(--radius);
+  border: 1px solid var(--color-border);
+  max-height: 480px;
+  width: auto;
+  margin: 0 auto;
+}
+
+.success-screen-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* One vertical stack of related controls (share buttons, the manage
+   link + its copy button, the closing nav buttons) — gap matches
+   .share-preview-actions/.success-actions elsewhere so every action
+   cluster in the app uses the same rhythm. */
+.success-screen-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.success-screen-group .primary-button,
+.success-screen-group .secondary-button {
+  margin-top: 0;
+}
+
+.manage-link-note {
+  font-size: 13px;
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+/* Same border/radius/background family as inputs and .secondary-button
+   (14px padding, --radius-sm) — this is effectively a read-only data
+   field, so it should read as one. */
+.manage-link {
+  display: block;
+  word-break: break-all;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 14px;
+  margin: 0;
+  font-size: 13px;
+}
+
+/* Desktop only — on a narrow viewport a 1080×1920 image next to
+   buttons has no room to breathe, so it stays stacked below 780px. */
+@media (min-width: 780px) {
+  .success-screen-page {
+    max-width: 760px;
+  }
+
+  .success-screen-layout {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 32px;
+    text-align: left;
+  }
+
+  .success-screen-share-image {
+    flex: 0 0 280px;
+    width: 280px;
+    max-height: none;
+    margin: 0;
+  }
+
+  .success-screen-actions {
+    flex: 1;
+  }
+}
+
+/* Off-screen share-image template — full resolution, positioned
+   out of the viewport rather than display:none so html-to-image
+   can still measure and render it. */
+.share-card-offscreen {
+  position: fixed;
+  top: 0;
+  left: -10000px;
+  pointer-events: none;
+}
+
+.share-card {
+  background: linear-gradient(180deg, #1c1c1e 0%, #3a3a3d 100%);
+  color: #fff;
+  padding: 80px 64px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+.share-card-logo-placeholder {
+  width: 96px;
+  height: 96px;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.15);
+  margin-bottom: 48px;
+}
+
+.share-card-category {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 40px;
+  font-weight: 600;
+  margin-bottom: 32px;
+}
+
+.share-card-icon {
+  font-size: 56px;
+}
+
+/* Reuses the same colors as the Give Help map markers (see
+   URGENCY_LEVELS in constants.js) so urgency reads the same way
+   everywhere in the app, not just here. */
+.share-card-urgency {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 34px;
+  font-weight: 700;
+  color: #fff;
+  padding: 14px 32px;
+  border-radius: 999px;
+  margin-bottom: 32px;
+}
+
+.share-card-blood-type {
+  font-size: 64px;
+  font-weight: 700;
+  padding: 20px 48px;
+  margin-bottom: 40px;
+  background: var(--color-danger);
+  border-radius: 16px;
+  letter-spacing: 0.02em;
+}
+
+.share-card-headline {
+  font-size: 56px;
+  line-height: 1.15;
+  margin: 0 0 40px;
+}
+
+.share-card-description {
+  font-size: 38px;
+  line-height: 1.4;
+  max-width: 880px;
+  margin: 0 0 48px;
+}
+
+.share-card-address,
+.share-card-note {
+  font-size: 34px;
+  line-height: 1.35;
+  max-width: 880px;
+  margin: 0 0 16px;
+  color: rgba(255, 255, 255, 0.95);
+}
+
+/* Same icon + bold-muted-label + value pattern as .detail-label
+   elsewhere in the app, so "what this line means" doesn't rely on
+   the emoji alone. */
+.share-card-label {
+  font-weight: 700;
+  opacity: 0.75;
+}
+
+.share-card-contact {
+  font-size: 42px;
+  font-weight: 700;
+  margin: 8px 0 40px;
+  padding: 16px 32px;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+}
+
+.share-card-qr {
+  width: 320px;
+  height: 320px;
+  background: #fff;
+  padding: 16px;
+  border-radius: 16px;
+  margin-bottom: 16px;
+}
+
+.share-card-url {
+  font-size: 26px;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  color: rgba(255, 255, 255, 0.75);
+  word-break: break-all;
+  max-width: 880px;
+  margin: 0 0 24px;
+}
+
+.share-card-cta {
+  font-size: 30px;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+/* Lowest-priority fact on the card, deliberately pushed down and
+   muted — see the ordering note above .share-card-date in the JSX. */
+.share-card-date {
+  font-size: 24px;
+  color: rgba(255, 255, 255, 0.55);
+  margin: 24px 0 0;
+}
+
+.share-card-trust {
+  font-size: 28px;
+  font-style: italic;
+  color: rgba(255, 255, 255, 0.85);
+  max-width: 800px;
+  line-height: 1.4;
+  margin: 32px 0 0;
+}
+
+.share-card-footer {
+  font-size: 24px;
+  color: rgba(255, 255, 255, 0.55);
+  margin-top: 16px;
+}
+
+/* ============================================================
+   Give Help — map + list, both shown by default. Stacked on
+   phones (map on top, list scrolls below); side-by-side once
+   there's room, since most people will be on a phone.
+   ============================================================ */
+.give-help-page {
+  max-width: 1100px;
+}
+
+.filters {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.filters select {
+  flex: 1;
+}
+
+.give-help-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.give-help-map {
+  height: 300px;
+}
+
+.give-help-map .manizales-map {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.give-help-map .map-container {
+  flex: 1;
+  min-height: 0;
+}
+
+.give-help-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.empty-state {
+  color: var(--color-text-muted);
+  text-align: center;
+  padding: 24px 0;
+}
+
+/* Always-visible official sites section, below the map/post list —
+   see OfficialSitesList.jsx. Not filtered by category/urgency/
+   covered toggle, since these aren't community postings. */
+.official-sites-section {
+  margin-top: 28px;
+}
+
+.official-sites-section h3 {
+  margin: 0 0 4px;
+}
+
+.official-sites-hint {
+  font-size: 13px;
+  color: var(--color-text-muted);
+  margin: 0 0 14px;
+}
+
+.official-sites-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 12px;
+}
+
+.official-site-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-card);
+  padding: 14px 16px;
+}
+
+.official-site-card h4 {
+  margin: 0;
+  font-size: 15px;
+}
+
+.official-site-card-type {
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+.official-site-card-address {
+  font-size: 13px;
+  color: var(--color-text-muted);
+  margin: 4px 0 10px;
+}
+
+.official-site-card-links {
+  display: flex;
+  gap: 14px;
+}
+
+.official-site-card-links a {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-primary);
+  text-decoration: underline;
+}
+
+/* "Sugerir otro" — dashed border sets it apart from the informational
+   cards without needing an icon or color accent. */
+.official-site-card-suggest {
+  border-style: dashed;
+  display: flex;
+  flex-direction: column;
+}
+
+.official-site-card-suggest .official-site-card-address {
+  flex: 1;
+}
+
+.post-card {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 12px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-card);
+  padding: 16px;
+  cursor: pointer;
+}
+
+.post-card-content {
+  min-width: 0;
+  /* 20% down from the inherited 16px body default — covers the
+     header text and description paragraph, neither of which had
+     their own font-size before. The badges/location lines below
+     have their own explicit sizes, each reduced by the same 20%. */
+  font-size: 12.8px;
+}
+
+.post-card.highlighted {
+  border-color: var(--color-primary);
+  /* box-shadow: 0 0 0 2px var(--color-primary); */
+}
+
+.post-card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+
+.urgency-badge {
+  margin-left: auto;
+  font-size: 9.6px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: var(--radius-lg);
+  background: var(--color-border);
+  /* The three tiers below fill with light pastels regardless of
+     theme — pin the text to a dark ink so it stays readable rather
+     than inheriting the page's (now light) body text color. */
+  color: var(--color-bg);
+}
+
+.urgency-now {
+  background: #f6d3c6;
+}
+.urgency-today {
+  background: #f3e4b3;
+}
+.urgency-week {
+  background: #d7e6da;
+}
+
+.blood-type-badge {
+  font-size: 9.6px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: var(--radius-lg);
+  background: var(--color-danger);
+  color: #fff;
+}
+
+.post-location,
+.post-location-note,
+.post-contact {
+  font-size: 11.2px;
+  margin: 4px 0;
+}
+
+.status-badge {
+  display: inline-block;
+  font-size: 9.6px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: var(--radius-lg);
+  margin-bottom: 6px;
+}
+
+.status-in-progress {
+  background: #dce8f5;
+  color: #2a5a8c;
+}
+
+.post-card-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 6px;
+  flex-wrap: wrap;
+}
+
+/* ============================================================
+   Post-card action rail — icon buttons that each open a
+   ConfirmTooltip-style popover instead of firing immediately. See
+   PostActionButton.jsx.
+   ============================================================ */
+/* Vertical stack again, buttons fixed at 32x32 — below the app's
+   usual --tap-min (48px). Deliberate call, made after flagging the
+   accessibility tradeoff: at this size these read more like dense
+   utility icons than primary tap targets, so treat any further
+   shrink past this as a real usability regression, not just a
+   style tweak. */
+.action-rail {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+}
+
+.action-btn-wrap {
+  position: relative;
+}
+
+.action-icon-btn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.action-icon-btn.is-active {
+  border-color: var(--color-give);
+  color: var(--color-give-text);
+  cursor: default;
+}
+
+.action-icon-btn:disabled {
+  opacity: 0.85;
+}
+
+/* Floating popover, anchored to its own icon button so the arrow
+   always lines up with whichever one was tapped — no JS position
+   math needed, it just inherits the button's own position. Opens
+   to the left, into the card body, since the rail sits on the
+   card's right edge. */
+.action-tooltip {
+  position: absolute;
+  top: 50%;
+  right: calc(100% + 14px);
+  transform: translateY(-50%);
+  width: min(240px, 72vw);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-card);
+  padding: 12px;
+  z-index: 30;
+  cursor: default;
+}
+
+/* Rotated-square arrow — a diamond half-hidden behind the tooltip
+   box, with only the two outward-facing edges bordered so it reads
+   as a continuous pointer toward the button. */
+.action-tooltip-arrow {
+  position: absolute;
+  top: 50%;
+  right: -6px;
+  width: 12px;
+  height: 12px;
+  transform: translateY(-50%) rotate(45deg);
+  background: var(--color-surface);
+  border-right: 1px solid var(--color-border);
+  border-top: 1px solid var(--color-border);
+}
+
+.action-tooltip-trust {
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--color-text-muted);
+  margin: 0 0 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.action-tooltip-question {
+  font-size: 14px;
+  line-height: 1.4;
+  margin: 0 0 10px;
+}
+
+.action-tooltip-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.action-tooltip-buttons button {
+  text-align: left;
+  padding: 10px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.action-tooltip-confirm {
+  border-color: var(--color-give) !important;
+  color: var(--color-give-text) !important;
+  font-weight: 600;
+}
+
+.action-tooltip-cancel {
+  color: var(--color-text-muted);
+}
+
+.action-vote-count {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+.helper-count-owner {
+  font-size: 14px;
+  color: var(--color-text-muted);
+  margin: 4px 0;
+}
+
+.status-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.status-covered {
+  background: #e2e8dc;
+  color: #4b5c3f;
+}
+
+.post-card.is-covered {
+  opacity: 0.55;
+  filter: grayscale(0.4);
+}
+
+.covered-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--color-text-muted);
+  margin-bottom: 12px;
+}
+
+/* ============================================================
+   Icon legend — the tap-to-open explainer for what the post-card
+   action icons mean (see IconLegend.jsx). Desktop also gets a
+   native hover tooltip per icon (title attr on each button in
+   PostActionButton.jsx); this is the touchscreen equivalent, plus
+   the trust/efficiency/veracity framing behind the whole confirm-
+   tooltip system.
+   ============================================================ */
+.icon-legend {
+  margin-bottom: 12px;
+}
+
+.icon-legend-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  font-size: 13px;
+  text-decoration: underline;
+  padding: 4px 0;
+  cursor: pointer;
+  min-height: var(--tap-min);
+}
+
+.icon-legend-panel {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-card);
+  padding: 14px;
+  margin-top: 6px;
+}
+
+.icon-legend-list {
+  list-style: none;
+  margin: 0 0 12px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.icon-legend-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.icon-legend-icon {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-muted);
+  font-size: 12px;
+}
+
+.icon-legend-list strong {
+  font-size: 13px;
+}
+
+.icon-legend-list p {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  margin: 2px 0 0;
+}
+
+.icon-legend-concept {
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--color-text-muted);
+  border-top: 1px solid var(--color-border);
+  padding-top: 12px;
+  margin: 0;
+}
+
+.icon-legend-concept strong {
+  color: var(--color-text);
+}
+
+/* ============================================================
+   Donate
+   ============================================================ */
+.org-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  margin: 16px 0;
+}
+
+.org-card {
+  display: block;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-card);
+  padding: 16px;
+  text-decoration: none;
+  color: var(--color-text);
+}
+
+.org-card h3 {
+  margin: 0 0 8px;
+  font-size: 17px;
+}
+
+.org-desc {
+  margin: 0 0 8px;
+}
+
+.org-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 600;
+  color: var(--color-donate);
+}
+
+.org-card-soon {
+  border-style: dashed;
+  background: transparent;
+  color: var(--color-text-muted);
+}
+
+.org-card-soon h3 {
+  color: var(--color-text-muted);
+  font-size: 15px;
+}
+
+.org-card-soon .org-desc {
+  margin: 0;
+  font-size: 14px;
+}
+
+.donate-caution {
+  font-size: 13px;
+  color: var(--color-text-muted);
+  border-top: 1px solid var(--color-border);
+  padding-top: 16px;
+}
+
+.page-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.lang-toggle {
+  display: inline-flex;
+  flex-shrink: 0;
+  gap: 4px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 4px;
+}
+
+.lang-option {
+  border: none;
+  background: none;
+  border-radius: var(--radius-lg);
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  min-height: var(--tap-min);
+}
+
+.lang-option.active {
+  background: var(--color-donate);
+  color: #fff;
+}
+
+/* ============================================================
+   Wider screens
+   ============================================================ */
+@media (min-width: 768px) {
+  .landing-buttons {
+    flex-direction: row;
+  }
+
+  .big-button {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .option-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .give-help-layout {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+
+  .give-help-map {
+    flex: 1;
+    height: 560px;
+    position: sticky;
+    top: 16px;
+  }
+
+  .give-help-list {
+    flex: 1;
+    max-height: 560px;
+    overflow-y: auto;
+  }
+
+  .org-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

@@ -1,0 +1,102 @@
+rules_version = '2';
+
+// ============================================================
+// Deliberately permissive rules, matching the app's zero-login,
+// social-trust design: anyone can post and browse without an
+// account. The trade-offs below are intentional for a fast,
+// low-friction disaster-response tool — see README.md for how
+// to harden this later (e.g. Cloud Functions + App Check) if
+// abuse becomes a real problem once traffic grows.
+// ============================================================
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /posts/{postId} {
+      allow read: if true;
+
+      allow create: if
+        request.resource.data.category in ['supplies', 'volunteer', 'housing', 'blood'] &&
+        request.resource.data.status == 'open' &&
+        request.resource.data.description is string &&
+        request.resource.data.description.size() > 0 &&
+        request.resource.data.description.size() < 500 &&
+        request.resource.data.editToken is string;
+
+      // Three kinds of update are allowed, and nothing else:
+      //
+      // 1. Status changes (open / in_progress / resolved), meant to
+      //    come from the poster via their manage link. This isn't a
+      //    strong guarantee (anyone could technically change status
+      //    on someone else's post, since there's no server-side check
+      //    of the editToken here), but it limits the blast radius: no
+      //    one can edit descriptions, locations, or contact info
+      //    after the fact.
+      //
+      // 2. helperPings changes ("Voy a ayudar" taps) — open to anyone
+      //    since it's a non-authoritative signal by design, not a
+      //    security-sensitive field. Capped at 200 entries so it
+      //    can't be used to bloat a document.
+      //
+      // 3. The covered/still-needed vote pair. Unlike helperPings,
+      //    these CAN flip status (to 'covered' or back to 'open') —
+      //    see addCoveredVote/addStillNeededVote in firebase.js,
+      //    which always write coveredVotes + stillNeededVotes +
+      //    status together in one call, even when only one field
+      //    actually changed value, so every write from this pathway
+      //    matches this exact three-key shape.
+      allow update: if
+        (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status']) &&
+         request.resource.data.status in ['open', 'in_progress', 'resolved']) ||
+        (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['helperPings']) &&
+         request.resource.data.helperPings is list &&
+         request.resource.data.helperPings.size() < 200) ||
+        (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['coveredVotes', 'stillNeededVotes', 'status']) &&
+         request.resource.data.coveredVotes is list &&
+         request.resource.data.coveredVotes.size() < 200 &&
+         request.resource.data.stillNeededVotes is list &&
+         request.resource.data.stillNeededVotes.size() < 200 &&
+         request.resource.data.status in ['open', 'in_progress', 'covered']);
+
+      allow delete: if false;
+    }
+
+    match /reports/{reportId} {
+      allow create: if request.resource.data.postId is string;
+      allow read, update, delete: if false; // review via Firebase console
+    }
+
+    // Feedback channels for the "Sugerir una idea" and "Reportar un
+    // error" footer links — same shape as /reports: anyone can create,
+    // nobody can read/update/delete from the client. Reviewed by hand
+    // in the Firebase console.
+    match /ideas/{ideaId} {
+      allow create: if
+        request.resource.data.text is string &&
+        request.resource.data.text.size() > 0 &&
+        request.resource.data.text.size() < 1000;
+      allow read, update, delete: if false;
+    }
+
+    match /bugReports/{bugId} {
+      allow create: if
+        request.resource.data.text is string &&
+        request.resource.data.text.size() > 0 &&
+        request.resource.data.text.size() < 1000;
+      allow read, update, delete: if false;
+    }
+
+    // "Sugerir otro" on the official sites section — same shape as
+    // /ideas and /bugReports: write-only, reviewed by hand. Nothing
+    // published here is auto-added to the live OFFICIAL_SITES list.
+    match /officialSiteSuggestions/{suggestionId} {
+      allow create: if
+        request.resource.data.name is string &&
+        request.resource.data.name.size() > 0 &&
+        request.resource.data.name.size() < 200 &&
+        request.resource.data.address is string &&
+        request.resource.data.address.size() > 0 &&
+        request.resource.data.address.size() < 300;
+      allow read, update, delete: if false;
+    }
+  }
+}

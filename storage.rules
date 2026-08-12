@@ -1,0 +1,14 @@
+rules_version = '2';
+
+// Anyone can upload a post photo (optional field on the Need Help
+// form) and anyone can view them. Size-capped to keep uploads fast
+// on unreliable connections and to bound storage costs.
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /posts/{postId}/{fileName} {
+      allow read: if true;
+      allow write: if request.resource.size < 5 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+    }
+  }
+}
