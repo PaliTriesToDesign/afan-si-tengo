@@ -204,12 +204,80 @@ img {
   gap: 8px;
 }
 
-.brand-placeholder {
-  width: 72px;
-  height: 72px;
-  border-radius: 20px;
-  background: var(--color-border);
-  margin-bottom: 8px;
+/* Landing hero — 9-frame crumbling cathedral tower, replaces the old
+   empty square placeholder. Mobile: stacked above the content below
+   (see .landing-content). Desktop: sits beside it — see the row
+   layout + bigger size in the min-width: 768px block further down. */
+.landing-cathedral {
+  width: 128px;
+  height: 256px;
+  flex-shrink: 0;
+  background-image: url("./assets/cathedral.png");
+  background-repeat: no-repeat;
+  /* Percentage-based size/position (not fixed px) so this scales
+     cleanly to any width/height — mobile vs. desktop — without
+     recomputing frame math or risking a cropped/distorted mismatch.
+     900% = 9 frames side by side; each frame's position step is
+     n/8 * 100%. image-rendering: pixelated keeps every size crisp,
+     since it's nearest-neighbor scaling either direction rather than
+     blurred/smoothed. */
+  background-size: 900% 100%;
+  image-rendering: pixelated;
+  animation: cathedral-crumble 3800ms steps(1, jump-end) infinite;
+}
+
+/* Frame timing from the source animation: 1000ms hold on frame 1,
+   six 200ms collapse frames, 600ms on frame 8, 1000ms hold on the
+   rubble frame (9), then it loops. Each keyframe % is that frame's
+   start time as a share of the 3800ms total cycle. steps(1, jump-end)
+   makes it hold-then-snap instead of sliding between background-
+   position values — note steps(1, jump-none) (the original version)
+   is invalid per spec (jump-none requires 2+ steps) and silently
+   drops the whole animation declaration, which is why it wasn't
+   animating at all. */
+@keyframes cathedral-crumble {
+  0% {
+    background-position: 0% 0;
+  }
+  26.316% {
+    background-position: 12.5% 0;
+  }
+  31.579% {
+    background-position: 25% 0;
+  }
+  36.842% {
+    background-position: 37.5% 0;
+  }
+  42.105% {
+    background-position: 50% 0;
+  }
+  47.368% {
+    background-position: 62.5% 0;
+  }
+  52.632% {
+    background-position: 75% 0;
+  }
+  57.895% {
+    background-position: 87.5% 0;
+  }
+  73.684% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: 100% 0;
+  }
+}
+
+/* Wraps everything except the cathedral (heading, subtitle, buttons,
+   share link) so the two can sit side by side on desktop while
+   staying a single stacked column on mobile — see both breakpoints
+   in the min-width: 768px block below. */
+.landing-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
 }
 
 .landing h1 {
@@ -276,22 +344,53 @@ img {
   box-shadow: none;
 }
 
-/* Fixed-size icon "chip" — today holds an emoji at a large size,
-   later swaps for a pixel-art sprite (e.g. 32px, image-rendering:
-   pixelated keeps it crisp instead of browser-smoothed) without
-   any layout change. Slightly squared corners read as a distinct,
-   deliberate shape against the pill-shaped button around it. */
+/* Icon slot — no background chip anymore, just a flex box sized to
+   the sprite so it centers cleanly inside the button. */
 .big-button-icon {
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  width: 44px;
-  height: 44px;
-  border-radius: var(--radius-sm);
-  background: rgba(255, 255, 255, 0.16);
+  width: 66px;
+  height: 66px;
   font-size: 24px;
   image-rendering: pixelated;
+}
+
+/* Landing button pixel sprites (handUp/handDown/coin) — each source
+   PNG is a 64×32 horizontal strip, two 32×32 frames: normal, then
+   hover/press. Percentage-based background-size/position (rather
+   than fixed px) so resizing the sprite is a one-line change instead
+   of recomputing frame offsets. background-position swaps frames;
+   the trigger is on the parent .big-button below so it fires
+   together with the button's own fill-color hover/press state. */
+.pixel-sprite {
+  --size: 64px;
+  width: var(--size);
+  height: var(--size);
+  background-repeat: no-repeat;
+  background-size: 200% 100%;
+  background-position: 0% 0;
+  image-rendering: pixelated;
+}
+
+.pixel-sprite-hand-up {
+  background-image: url("./assets/handUp.png");
+}
+
+.pixel-sprite-hand-down {
+  background-image: url("./assets/handDown.png");
+}
+
+.pixel-sprite-coin {
+  background-image: url("./assets/coin.png");
+}
+
+/* :active is included alongside :hover/:focus-visible so the frame
+   swap also fires on mobile tap, matching the same trigger set the
+   button fill-color transitions already use above. */
+.big-button:is(:hover, :active, :focus-visible) .pixel-sprite {
+  background-position: 100% 0;
 }
 
 .big-button.need {
@@ -342,16 +441,6 @@ img {
   box-shadow:
     0 0 24px rgba(255, 201, 60, 0.4),
     0 0 3px rgba(255, 201, 60, 0.6);
-}
-
-/* Resting state: give/donate sit on the dark page background, so
-   the icon chip keeps the same translucent-white overlay as need's.
-   Only once they fill in with their bright neon color (hover/press/
-   focus) does the chip need to flip to translucent-black to stay
-   visible against that much lighter background. */
-.big-button.give:is(:hover, :active, :focus-visible) .big-button-icon,
-.big-button.donate:is(:hover, :active, :focus-visible) .big-button-icon {
-  background: rgba(0, 0, 0, 0.14);
 }
 
 /* ============================================================
@@ -1650,6 +1739,25 @@ textarea {
    Wider screens
    ============================================================ */
 @media (min-width: 768px) {
+  /* Cathedral moves from "stacked above content" (mobile) to
+     "beside content, left side" (desktop) — row instead of column,
+     and much bigger since it's no longer competing for vertical
+     space above the buttons. */
+  .landing {
+    flex-direction: row;
+    justify-content: center;
+    gap: 48px;
+  }
+
+  .landing-cathedral {
+    width: 280px;
+    height: 560px;
+  }
+
+  .landing-content {
+    width: auto;
+  }
+
   .landing-buttons {
     flex-direction: row;
   }

@@ -57,8 +57,34 @@ const OFFICIAL_SITE_SUGGESTIONS_COLLECTION = 'officialSiteSuggestions'
 // and their own browser's localStorage). It's not a real security
 // boundary, it's a "don't show delete/resolve controls to strangers"
 // mechanism, matching the app's deliberately low-friction trust model.
+//
+// crypto.randomUUID() isn't available on older browsers (it's a newer
+// addition than crypto.getRandomValues, which has been supported much
+// longer) — and this app needs to work on whatever phone someone has
+// after an earthquake, not just current-year devices. So this falls
+// back through getRandomValues, and finally Math.random, rather than
+// hard-failing post creation on an unsupported device. Since the token
+// isn't a real security boundary (see above), a weaker fallback here
+// is an acceptable trade-off for "the form still works."
 export function generateEditToken() {
-  return crypto.randomUUID()
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID()
+  }
+
+  if (typeof crypto !== 'undefined' && typeof crypto.getRandomValues === 'function') {
+    const bytes = crypto.getRandomValues(new Uint8Array(16))
+    bytes[6] = (bytes[6] & 0x0f) | 0x40 // version 4
+    bytes[8] = (bytes[8] & 0x3f) | 0x80 // variant 10
+    const hex = Array.from(bytes, (b) => b.toString(16).padStart(2, '0'))
+    return `${hex.slice(0, 4).join('')}-${hex.slice(4, 6).join('')}-${hex.slice(6, 8).join('')}-${hex.slice(8, 10).join('')}-${hex.slice(10, 16).join('')}`
+  }
+
+  // Last-resort fallback for browsers with no Web Crypto API at all.
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0
+    const v = c === 'x' ? r : (r & 0x3) | 0x8
+    return v.toString(16)
+  })
 }
 
 export async function createPost({

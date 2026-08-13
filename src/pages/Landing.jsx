@@ -4,13 +4,7 @@ import { useAwarenessShareImage } from "../components/ShareImageCard.jsx";
 import { shareOrDownloadImage } from "../lib/share.js";
 import { ACTIVE_CITY } from "../lib/constants";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faLifeRing,
-  faHandshake,
-  faHandHoldingHeart,
-  faBullhorn,
-  faHandHoldingHand,
-} from "@fortawesome/free-solid-svg-icons";
+import { faLifeRing, faBullhorn } from "@fortawesome/free-solid-svg-icons";
 
 export default function Landing() {
   const { navigate } = useRouter();
@@ -41,64 +35,70 @@ export default function Landing() {
   return (
     <div className="landing">
       {CardPortal}
-      {/* Logo/branding placeholder — swap this block for a real
-          logo or pixel-art asset later without touching layout. */}
-      <div className="brand-placeholder" aria-hidden="true" />
+      {/* Cathedral tower, crumbling — 9-frame pixel-art loop, see
+          .landing-cathedral / @keyframes cathedral-crumble in
+          styles.css for the frame timing and sprite sheet layout. */}
+      <div className="landing-cathedral" aria-hidden="true" />
 
-      <h1>Afán Sí Tengo: {ACTIVE_CITY.label}</h1>
-      <p className="landing-subtitle">
-        Conecta a quienes necesitan ayuda con quienes quieren ayudar.
-      </p>
+      {/* Everything but the cathedral — wrapped so it can sit beside
+          the tower on desktop while staying a single stacked column
+          on mobile. See .landing-content in styles.css. */}
+      <div className="landing-content">
+        <h1>Afán Sí Tengo: {ACTIVE_CITY.label}</h1>
+        <p className="landing-subtitle">
+          Conecta a quienes necesitan ayuda con quienes quieren ayudar.
+        </p>
 
-      <div className="landing-buttons">
+        <div className="landing-buttons">
+          <button
+            type="button"
+            className="big-button need"
+            onClick={() => navigate("/necesito-ayuda")}
+          >
+            <span className="big-button-icon">
+              <span className="pixel-sprite pixel-sprite-hand-up" />
+            </span>
+            Necesito Ayuda
+          </button>
+
+          <button
+            type="button"
+            className="big-button give"
+            onClick={() => navigate("/quiero-ayudar")}
+          >
+            <span className="big-button-icon">
+              <span className="pixel-sprite pixel-sprite-hand-down" />
+            </span>
+            Quiero Ayudar
+          </button>
+
+          <button
+            type="button"
+            className="big-button donate"
+            onClick={() => navigate("/donar")}
+          >
+            <span className="big-button-icon">
+              <span className="pixel-sprite pixel-sprite-coin" />
+            </span>
+            Donar $
+          </button>
+        </div>
+
         <button
           type="button"
-          className="big-button need"
-          onClick={() => navigate("/necesito-ayuda")}
+          className="share-app-link"
+          disabled={sharingAwareness}
+          onClick={handleShareAwareness}
         >
-          <span className="big-button-icon">
-            <FontAwesomeIcon icon={faHandHoldingHand} />
-          </span>
-          Necesito Ayuda
-        </button>
-
-        <button
-          type="button"
-          className="big-button give"
-          onClick={() => navigate("/quiero-ayudar")}
-        >
-          <span className="big-button-icon">
-            <FontAwesomeIcon icon={faHandshake} />
-          </span>
-          Quiero Ayudar
-        </button>
-
-        <button
-          type="button"
-          className="big-button donate"
-          onClick={() => navigate("/donar")}
-        >
-          <span className="big-button-icon">
-            <FontAwesomeIcon icon={faHandHoldingHeart} />
-          </span>
-          Donar $
+          {sharingAwareness ? (
+            "Generando…"
+          ) : (
+            <>
+              <FontAwesomeIcon icon={faBullhorn} /> Comparte esta iniciativa
+            </>
+          )}
         </button>
       </div>
-
-      <button
-        type="button"
-        className="share-app-link"
-        disabled={sharingAwareness}
-        onClick={handleShareAwareness}
-      >
-        {sharingAwareness ? (
-          "Generando…"
-        ) : (
-          <>
-            <FontAwesomeIcon icon={faBullhorn} /> Comparte esta iniciativa
-          </>
-        )}
-      </button>
     </div>
   );
 }
