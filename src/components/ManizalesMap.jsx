@@ -5,9 +5,10 @@ import markerIcon from 'leaflet/dist/images/marker-icon.png'
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png'
 import markerShadow from 'leaflet/dist/images/marker-shadow.png'
 import { icon as faIcon } from '@fortawesome/fontawesome-svg-core'
-import { faLocationDot, faCompass, faPhone, faUsers } from '@fortawesome/free-solid-svg-icons'
+import { faLocationDot, faCompass, faPhone, faUsers, faCopy, faCheck } from '@fortawesome/free-solid-svg-icons'
 import { ACTIVE_CITY, CATEGORIES, URGENCY_LEVELS, POST_STATUS, STATUS_LABELS, HELPER_PING_EXPIRY_MS } from '../lib/constants'
 import { OFFICIAL_SITES, OFFICIAL_SITE_TYPES } from '../lib/officialSites'
+import { copyToClipboard } from '../lib/share.js'
 
 // Markers and popups here are built from raw HTML strings for Leaflet
 // (not JSX — Leaflet owns that DOM directly), so <FontAwesomeIcon>
@@ -16,6 +17,24 @@ import { OFFICIAL_SITES, OFFICIAL_SITE_TYPES } from '../lib/officialSites'
 // output format for this one file.
 function faSvg(iconDef) {
   return faIcon(iconDef).html.join('')
+}
+
+// Matches the app's other 768px breakpoint (see the "Wider screens"
+// media query in styles.css). Post-marker popups are skipped below
+// it — see the effect below for why.
+const DESKTOP_QUERY = '(min-width: 768px)'
+
+function useIsDesktop() {
+  const [isDesktop, setIsDesktop] = useState(
+    () => typeof window !== 'undefined' && window.matchMedia(DESKTOP_QUERY).matches,
+  )
+  useEffect(() => {
+    const mql = window.matchMedia(DESKTOP_QUERY)
+    const onChange = () => setIsDesktop(mql.matches)
+    mql.addEventListener('change', onChange)
+    return () => mql.removeEventListener('change', onChange)
+  }, [])
+  return isDesktop
 }
 
 // Vite-bundler fix for Leaflet's default marker icons, which
@@ -88,6 +107,7 @@ export default function ManizalesMap({
   const browseMarkersRef = useRef([])
   const markersByIdRef = useRef({})
   const officialMarkersRef = useRef([])
+  const isDesktop = useIsDesktop()
 
   // Init map once.
   useEffect(() => {
@@ -106,6 +126,27 @@ export default function ManizalesMap({
         onChange?.({ lat, lng })
       })
     }
+
+    // Popup content is a raw HTML string (see popupHtml/officialPopupHtml
+    // below), not JSX, so the copy button inside it can't have a React
+    // onClick — wire it here instead, once per map, via event delegation
+    // on whatever popup Leaflet just opened.
+    map.on('popupopen', (e) => {
+      const btn = e.popup.getElement()?.querySelector('.map-popup-copy-btn')
+      if (!btn) return
+      const phone = btn.dataset.copy
+      const originalHtml = btn.innerHTML
+      btn.onclick = async () => {
+        const ok = await copyToClipboard(phone)
+        if (!ok) return
+        btn.innerHTML = faSvg(faCheck)
+        btn.classList.add('map-popup-copy-btn-done')
+        setTimeout(() => {
+          btn.innerHTML = originalHtml
+          btn.classList.remove('map-popup-copy-btn-done')
+        }, 1500)
+      }
+    })
 
     return () => {
       map.remove()
@@ -149,7 +190,15 @@ export default function ManizalesMap({
       const marker = L.marker([post.location.lat, post.location.lng], {
         icon: categoryIcon(post),
       }).addTo(map)
-      marker.bindPopup(popupHtml(post))
+      // On mobile, tapping a pin scrolls the page straight to the
+      // matching card (see onSelectPost below + GiveHelp.jsx) — a
+      // popup here would just be a cramped preview that's immediately
+      // scrolled out from under you. Desktop doesn't have that
+      // problem (the map stays put via position: sticky while the
+      // list scrolls independently), so it keeps the popup.
+      if (isDesktop) {
+        marker.bindPopup(popupHtml(post))
+      }
       marker.on('click', () => onSelectPost?.(post))
       browseMarkersRef.current.push(marker)
       markersByIdRef.current[post.id] = marker
@@ -162,7 +211,7 @@ export default function ManizalesMap({
       map.setView(ACTIVE_CITY.center, ACTIVE_CITY.zoom)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mode, posts])
+  }, [mode, posts, isDesktop])
 
   // OFFICIAL_SITES markers — rendered once per mount in browse mode,
   // independent of `posts`/filters (they're always-on reference
@@ -186,18 +235,21 @@ export default function ManizalesMap({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mode])
 
-  // Picking a card in the list (or a `?post=` link) pans the map
-  // to that marker and pops it open, so the map and list always
-  // point at the same posting.
+  // Picking a card in the list (or a `?post=` link) pans the map to
+  // that marker and, on desktop, pops it open — so the map and list
+  // always point at the same posting. No popup to open on mobile
+  // (see the marker-rendering effect above).
   useEffect(() => {
     if (mode !== 'browse' || !selectedPostId) return
     const map = mapRef.current
     const marker = markersByIdRef.current[selectedPostId]
     if (!map || !marker) return
     map.setView(marker.getLatLng(), Math.max(map.getZoom(), 15), { animate: true })
-    marker.openPopup()
+    if (isDesktop) {
+      marker.openPopup()
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mode, selectedPostId, posts])
+  }, [mode, selectedPostId, posts, isDesktop])
 
   return (
     <div className="manizales-map">
@@ -240,7 +292,7 @@ function popupHtml(post) {
       <p>${escapeHtml(post.description || '')}</p>
       ${post.location?.address ? `<p class="map-popup-address">${faSvg(faLocationDot)} <span class="detail-label">Dirección:</span> ${escapeHtml(post.location.address)}</p>` : ''}
       ${post.locationNote ? `<p class="map-popup-note">${faSvg(faCompass)} <span class="detail-label">Referencia:</span> ${escapeHtml(post.locationNote)}</p>` : ''}
-      ${post.contact ? `<p class="map-popup-contact">${faSvg(faPhone)} ${escapeHtml(post.contact)}</p>` : ''}
+      ${post.contact ? `<p class="map-popup-contact">${faSvg(faPhone)} ${escapeHtml(post.contact)} <button type="button" class="map-popup-copy-btn" data-copy="${escapeHtml(post.contact)}" aria-label="Copiar número">${faSvg(faCopy)}</button></p>` : ''}
       ${activeHelpers > 0 ? `<p class="map-popup-helpers">${faSvg(faUsers)} ${activeHelpers === 1 ? '1 persona va' : `${activeHelpers} personas van`}</p>` : ''}
     </div>
   `

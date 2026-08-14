@@ -33,12 +33,9 @@ export const DONATION_ORGS = {
 
 // Orgs we know about but don't have confirmed donation info for yet
 // (no verified link/campaign details to point people to). Shown on
-// both language versions as a placeholder, not a live link.
-export const PENDING_ORGS = [
-  {
-    name: { es: "SES Unidad Neonatal", en: "SES Neonatal Unit" },
-  },
-];
+// both language versions as a placeholder, not a live link. Empty for
+// now — add entries here (e.g. { name: { es, en } }) as they come up.
+export const PENDING_ORGS = [];
 
 export const DONATE_CAUTION = {
   es: "Dona solo a través del sitio oficial de cada organización. Desconfía de solicitudes de dinero por WhatsApp, tarjetas de regalo o transferencias a cuentas personales.",

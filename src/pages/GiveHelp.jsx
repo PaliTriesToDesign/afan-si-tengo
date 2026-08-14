@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "../lib/router.jsx";
 import ManizalesMap from "../components/ManizalesMap.jsx";
-import { ChevronLeft } from "../components/Icons.jsx";
+import { ChevronLeft, ChevronUp } from "../components/Icons.jsx";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faLocationDot,
@@ -11,6 +11,7 @@ import {
 import OfficialSitesList from "../components/OfficialSitesList.jsx";
 import IconLegend from "../components/IconLegend.jsx";
 import PostDescription from "../components/PostDescription.jsx";
+import CopyButton from "../components/CopyButton.jsx";
 import ReportButton from "../components/ReportButton.jsx";
 import HelperPingButton from "../components/HelperPingButton.jsx";
 import CoveredVoteButton from "../components/CoveredVoteButton.jsx";
@@ -51,6 +52,26 @@ export default function GiveHelp() {
   // generates and stops a second tap from starting mid-render.
   const [sharingPostId, setSharingPostId] = useState(null);
   const listRefs = useRef({});
+  const mapSectionRef = useRef(null);
+  // Only meaningful on mobile — desktop's map is position: sticky and
+  // never scrolls out of view in the first place, so the button stays
+  // hidden there via CSS regardless of this value (see .back-to-map).
+  const [mapOutOfView, setMapOutOfView] = useState(false);
+
+  useEffect(() => {
+    const el = mapSectionRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setMapOutOfView(!entry.isIntersecting),
+      { threshold: 0 },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  function scrollToMap() {
+    mapSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
 
   async function handleSharePost(post) {
     if (sharingPostId) return;
@@ -175,8 +196,19 @@ export default function GiveHelp() {
         </label>
       )}
 
+      {mapOutOfView && (
+        <button
+          type="button"
+          className="back-to-map"
+          onClick={scrollToMap}
+          aria-label="Volver al mapa"
+        >
+          <ChevronUp /> Mapa
+        </button>
+      )}
+
       <div className="give-help-layout">
-        <div className="give-help-map">
+        <div className="give-help-map" ref={mapSectionRef}>
           <ManizalesMap
             mode="browse"
             posts={filtered}
@@ -254,7 +286,8 @@ export default function GiveHelp() {
                   )}
                   {post.contact && (
                     <p className="post-contact">
-                      <FontAwesomeIcon icon={faPhone} /> {post.contact}
+                      <FontAwesomeIcon icon={faPhone} /> {post.contact}{" "}
+                      <CopyButton text={post.contact} />
                     </p>
                   )}
                 </div>

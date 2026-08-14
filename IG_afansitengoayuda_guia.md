@@ -69,11 +69,11 @@ La app ya genera 1080×1920 (story) y 1080×1080 (feed cuadrado). Para aprovecha
 
 Un destacado = un Main Feature de la app. 3 destacados, 1:1 con las 3 opciones del landing. Nombre corto, mismo color por categoría que ya usa la app.
 
-| Destacado | Color | Slides (3) | CTA |
+| Destacado | Color (var CSS) | Slides (3) | CTA |
 |---|---|---|---|
-| **Necesito Ayuda** | naranja (`--color-need`) | 1) "¿Necesitas algo urgente?" 2) Elige categoría → describe → marca ubicación 3) Se publica al instante, la comunidad lo ve | Link a Necesito Ayuda |
-| **Quiero Ayudar** | verde (`--color-give`) | 1) "¿Quieres ayudar?" 2) Mapa + lista de necesidades activas 3) Elige, contacta, ve | Link a Quiero Ayudar |
-| **Donar $** | dorado (`--color-donate`) | 1) "¿Prefieres donar plata?" 2) Organizaciones verificadas (Cruz Roja, WCK, Convoy of Hope, GlobalGiving) 3) La app no maneja dinero, te lleva directo a la fuente | Link a Donar |
+| **Necesito Ayuda** | `--color-need` `#c1440e` | 1) "¿Necesitas algo urgente?" 2) Elige categoría → describe → marca ubicación 3) Se publica al instante, la comunidad lo ve | Link a Necesito Ayuda |
+| **Quiero Ayudar** | `--color-give` `#2f6f4f` | 1) "¿Quieres ayudar?" 2) Mapa + lista de necesidades activas 3) Elige, contacta, ve | Link a Quiero Ayudar |
+| **Donar $** | `--color-donate` `#b8860b` | 1) "¿Prefieres donar plata?" 2) Organizaciones verificadas (Cruz Roja, WCK, Convoy of Hope, GlobalGiving) 3) La app no maneja dinero, te lleva directo a la fuente | Link a Donar |
 
 ---
 

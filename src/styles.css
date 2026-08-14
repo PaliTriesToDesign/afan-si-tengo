@@ -902,6 +902,42 @@ textarea {
   color: #5c5666;
 }
 
+.map-popup-contact {
+  display: flex;
+  gap: 0.25rem;
+  align-items: center;
+}
+
+/* Copy-to-clipboard button next to the phone number — wired up via
+   map.on('popupopen') in ManizalesMap.jsx since this markup is raw
+   HTML, not JSX. */
+.map-popup-copy-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  margin-left: 2px;
+  vertical-align: -5px;
+  border: 1px solid #d8d5e0;
+  border-radius: 5px;
+  background: #f4f2f8;
+  color: #5c5666;
+  cursor: pointer;
+  padding: 0;
+}
+
+.map-popup-copy-btn svg {
+  width: 10px;
+  height: 10px;
+}
+
+.map-popup-copy-btn-done {
+  background: #dcefe3;
+  border-color: #b7dcc4;
+  color: #2f6f4f;
+}
+
 /* OFFICIAL_SITES popup — title, address, links only, no status/
    action styling since these cards are purely informational. */
 .official-popup {
@@ -1158,11 +1194,13 @@ textarea {
 /* Card is a fixed 1080x1920 box — toPng only ever captures exactly
    that box, so a long description doesn't just get cut off itself,
    it pushes address/contact/QR/footer down past the bottom edge and
-   they vanish from the image entirely. Clamping to 5 lines with an
-   ellipsis guarantees the description can never blow that budget,
-   no matter how long the poster's free text runs. The full text
-   still lives on the live post — the QR/URL/CTA right below this
-   are what points people there. */
+   they vanish from the image entirely. Clamping with an ellipsis
+   guarantees the description can never blow that budget, no matter
+   how long the poster's free text runs. The full text still lives
+   on the live post — the QR/URL/CTA right below this are what
+   points people there. 7 lines (up from 5) now that the QR sits
+   beside its text instead of above it — see .share-card-qr-row,
+   which freed enough vertical room to raise this safely. */
 .share-card-description {
   font-size: 38px;
   line-height: 1.4;
@@ -1170,7 +1208,7 @@ textarea {
   margin: 0 0 48px;
   display: -webkit-box;
   -webkit-box-orient: vertical;
-  -webkit-line-clamp: 5;
+  -webkit-line-clamp: 7;
   overflow: hidden;
 }
 
@@ -1200,44 +1238,60 @@ textarea {
   border-radius: 16px;
 }
 
-/* Bottom block, bottom to top of priority: QR + url + Instagram are
-   the "how to find us" facts, one consistent size/weight so they
-   read as a set rather than a jumble of different text treatments.
-   CTA is the one bold line tying them together. Trust message and
-   footer close the card — footer stays the dimmest thing on the
-   card (pure watermark), everything else bumped for contrast. */
+/* QR sits beside its own text instead of stacked above it — same
+   info, shorter overall block, which is what actually buys the
+   description above more room (see the line-clamp comment on
+   .share-card-description). Text is left-aligned since it's reading
+   next to an image, not floating alone in the centered column the
+   rest of the card uses. */
+.share-card-qr-row {
+  display: flex;
+  align-items: center;
+  gap: 40px;
+  width: 100%;
+  max-width: 880px;
+  margin: 0 0 56px;
+  text-align: left;
+}
+
 .share-card-qr {
-  width: 320px;
-  height: 320px;
+  width: 280px;
+  height: 280px;
   background: #fff;
-  padding: 16px;
+  padding: 14px;
   border-radius: 16px;
-  margin-bottom: 20px;
+  flex-shrink: 0;
+}
+
+.share-card-qr-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  min-width: 0;
 }
 
 .share-card-url,
 .share-card-instagram {
   font-size: 28px;
   color: rgba(255, 255, 255, 0.85);
-  margin: 0 0 10px;
+  margin: 0;
 }
 
 .share-card-url {
   font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
   word-break: break-all;
-  max-width: 880px;
 }
 
 .share-card-instagram {
   font-weight: 600;
-  margin-bottom: 44px;
 }
 
 .share-card-cta {
   font-size: 32px;
   font-weight: 600;
   color: #fff;
-  margin: 0 0 56px;
+  margin: 0;
 }
 
 .share-card-trust {
@@ -1299,6 +1353,32 @@ textarea {
   display: flex;
   flex-direction: column;
   gap: 12px;
+}
+
+/* Floating "back to map" — mobile only. Appears once the map (see
+   the IntersectionObserver on .give-help-map in GiveHelp.jsx) has
+   scrolled out of view, whether that's from a pin tap or just normal
+   scrolling. Desktop's map is sticky and never leaves view, so this
+   stays hidden there via the ≥768px override below regardless of
+   `mapOutOfView`. */
+.back-to-map {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 40;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  color: var(--color-text);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 10px 16px;
+  cursor: pointer;
+  min-height: var(--tap-min);
 }
 
 .empty-state {
@@ -1482,6 +1562,30 @@ textarea {
   cursor: pointer;
 }
 
+/* Copy-to-clipboard for phone numbers — CopyButton.jsx (post card)
+   and the .map-popup-copy-btn variant above (map popup) are the same
+   idea in two different rendering contexts (React vs. raw HTML). */
+.copy-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border: 1px solid var(--color-border);
+  border-radius: 5px;
+  background: var(--color-bg);
+  color: var(--color-text-muted);
+  font-size: 9px;
+  cursor: pointer;
+  padding: 0;
+  vertical-align: -3px;
+}
+
+.copy-button-done {
+  border-color: var(--color-give);
+  color: var(--color-give-text);
+}
+
 .status-badge {
   display: inline-block;
   font-size: 9.6px;
@@ -1554,13 +1658,22 @@ textarea {
 /* Floating popover, anchored to its own icon button so the arrow
    always lines up with whichever one was tapped — no JS position
    math needed, it just inherits the button's own position. Opens
-   to the left, into the card body, since the rail sits on the
-   card's right edge. */
+   to the left (into the card body, since the rail sits on the
+   card's right edge) and downward from the button's own top edge —
+   deliberately NOT vertically centered. A centered tooltip needs
+   clear space both above and below the button; for the topmost card
+   in a list there often isn't room above (the page/map on mobile,
+   or the scrollable list container's own top edge on desktop), which
+   was clipping it. Opening downward only ever needs room below,
+   which the rest of the card (or more cards under it) reliably
+   provides. Trade-off: a card at the very bottom of a scrollable
+   list could face the same clipping in reverse — not handled here,
+   real collision detection would need JS measurement, which this
+   tooltip deliberately avoids to stay cheap on slow connections. */
 .action-tooltip {
   position: absolute;
-  top: 50%;
+  top: 0;
   right: calc(100% + 14px);
-  transform: translateY(-50%);
   width: min(240px, 72vw);
   background: var(--color-surface);
   border: 1px solid var(--color-border);
@@ -1573,14 +1686,16 @@ textarea {
 
 /* Rotated-square arrow — a diamond half-hidden behind the tooltip
    box, with only the two outward-facing edges bordered so it reads
-   as a continuous pointer toward the button. */
+   as a continuous pointer toward the button. Positioned to the
+   button's vertical center (half its height down from the tooltip's
+   now top-aligned edge), not the tooltip's own center. */
 .action-tooltip-arrow {
   position: absolute;
-  top: 50%;
+  top: calc(var(--action-icon-size) / 2 - 6px);
   right: -6px;
   width: 12px;
   height: 12px;
-  transform: translateY(-50%) rotate(45deg);
+  transform: rotate(45deg);
   background: var(--color-surface);
   border-right: 1px solid var(--color-border);
   border-top: 1px solid var(--color-border);
@@ -1900,6 +2015,10 @@ textarea {
     flex: 1;
     max-height: 560px;
     overflow-y: auto;
+  }
+
+  .back-to-map {
+    display: none;
   }
 
   .org-grid {

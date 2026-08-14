@@ -166,19 +166,23 @@ export function useShareImage() {
               </p>
             )}
 
-            {/* How to help — QR for a second device, plain URL and IG
-                handle for a forwarded screenshot, CTA tying the three
-                together. */}
-            {qrDataUrl && (
-              <img className="share-card-qr" src={qrDataUrl} alt="" />
-            )}
-            {shareUrl && (
-              <p className="share-card-url">{displayUrl(shareUrl)}</p>
-            )}
-            <p className="share-card-instagram">@afansitengo</p>
-            <p className="share-card-cta">
-              Escanea o visita el sitio para ayudar
-            </p>
+            {/* How to help — QR beside its own text instead of stacked
+                above it, so this whole block takes less vertical room
+                and leaves more headroom for a long description above. */}
+            <div className="share-card-qr-row">
+              {qrDataUrl && (
+                <img className="share-card-qr" src={qrDataUrl} alt="" />
+              )}
+              <div className="share-card-qr-text">
+                {shareUrl && (
+                  <p className="share-card-url">{displayUrl(shareUrl)}</p>
+                )}
+                <p className="share-card-instagram">@afansitengo</p>
+                <p className="share-card-cta">
+                  Escanea o visita el sitio para ayudar
+                </p>
+              </div>
+            </div>
 
             <p className="share-card-trust">
               Confía en tu gente. En momentos así, siempre hay un vecino cerca
@@ -252,12 +256,18 @@ export function useAwarenessShareImage() {
               con quienes pueden darla después del terremoto.
             </p>
 
-            {qrDataUrl && (
-              <img className="share-card-qr" src={qrDataUrl} alt="" />
-            )}
-            {homeUrl && <p className="share-card-url">{displayUrl(homeUrl)}</p>}
-            <p className="share-card-instagram">@afansitengo</p>
-            <p className="share-card-cta">Escanea o visita el sitio</p>
+            <div className="share-card-qr-row">
+              {qrDataUrl && (
+                <img className="share-card-qr" src={qrDataUrl} alt="" />
+              )}
+              <div className="share-card-qr-text">
+                {homeUrl && (
+                  <p className="share-card-url">{displayUrl(homeUrl)}</p>
+                )}
+                <p className="share-card-instagram">@afansitengo</p>
+                <p className="share-card-cta">Escanea o visita el sitio</p>
+              </div>
+            </div>
 
             <p className="share-card-trust">
               Confía en tu gente. En momentos así, siempre hay un vecino cerca
