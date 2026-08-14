@@ -80,7 +80,7 @@ export default function Landing() {
             <span className="big-button-icon">
               <span className="pixel-sprite pixel-sprite-coin" />
             </span>
-            Donar $
+            Donar - Donate
           </button>
         </div>
 

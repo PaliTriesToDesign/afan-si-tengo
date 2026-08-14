@@ -3,6 +3,7 @@ import {
   faPeopleCarryBox,
   faHouse,
   faDroplet,
+  faPaw,
   faCircle,
   faWrench,
   faCircleCheck,
@@ -102,6 +103,26 @@ export const CATEGORIES = {
     icon: faDroplet,
     descriptionPlaceholder: "Ej: cantidad de unidades, para qué procedimiento, plazo…",
   },
+  // Scope is deliberately narrow: temporary care/fostering + supplies,
+  // not lost & found matching. A lost/found board is a two-sided
+  // matching problem (a "found" post and a "lost" post need to find
+  // EACH OTHER) that doesn't fit this app's one-directional need →
+  // helper model — that's a bigger, separate feature if it happens.
+  pets: {
+    label: "Mascotas",
+    icon: faPaw,
+    items: [
+      "Cuidado temporal",
+      "Comida para mascotas",
+      "Transportadora / jaula",
+      "Correa / arnés",
+      "Arena para gatos",
+      "Medicina veterinaria",
+      "Vacunación",
+      "Baño / peluquería",
+    ],
+    descriptionPlaceholder: "Ej: especie, tamaño, cuánto tiempo se necesita el cuidado…",
+  },
 };
 
 // Multi-select, at least one required for category "blood" — a poster
@@ -109,6 +130,16 @@ export const CATEGORIES = {
 // work, so this can't be an exclusive radio choice. Captured as its
 // own field (not folded into free text) so it stays scannable/filterable.
 export const BLOOD_TYPES = ["O+", "O-", "A+", "A-", "B+", "B-", "AB+", "AB-", "No sé"];
+
+// Hard ceiling on the saved `description` field, measured in UTF-8
+// bytes (see lib/text.js byteLength) — MUST match the cap in
+// firestore.rules (`description.size() <= DESCRIPTION_MAX_BYTES`) or
+// the two drift and posts start failing again with no clear reason.
+// Was 500 — raised after a real donation-list post (a full supply
+// list for a shelter, ~900 bytes) got silently rejected. 3000 gives
+// real headroom for a structured list like that one while still
+// keeping individual posts scannable on a card/map popup.
+export const DESCRIPTION_MAX_BYTES = 3000;
 
 // `color` drives the map marker + legend so urgency is readable
 // at a glance while panning the city, not just inside each card.

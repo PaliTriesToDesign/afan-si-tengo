@@ -100,8 +100,7 @@ export function useShareImage() {
                 match/no-match. Everything below is read only by
                 someone who's already stopped scrolling. */}
 
-            {/* Logo/branding placeholder — swap for a real asset later. */}
-            <div className="share-card-logo-placeholder" />
+            <img className="share-card-logo" src="/favicon.svg" alt="" />
 
             <div className="share-card-category">
               <span className="share-card-icon">
@@ -111,6 +110,10 @@ export function useShareImage() {
               </span>
               <span>{CATEGORIES[post.category]?.label}</span>
             </div>
+
+            <p className="share-card-date">
+              Publicado el {formatDateEs(postedAt || new Date())}
+            </p>
 
             <div
               className="share-card-urgency"
@@ -131,10 +134,6 @@ export function useShareImage() {
                 {post.bloodTypes.join(" / ")}
               </div>
             )}
-
-            <p className="share-card-date">
-              Publicado el {formatDateEs(postedAt || new Date())}
-            </p>
 
             <h2 className="share-card-headline">
               Se necesita ayuda en {ACTIVE_CITY.label}
@@ -167,21 +166,19 @@ export function useShareImage() {
               </p>
             )}
 
-            {/* How to help — QR for a second device, plain URL for a
-                forwarded screenshot, CTA tying the two together. */}
+            {/* How to help — QR for a second device, plain URL and IG
+                handle for a forwarded screenshot, CTA tying the three
+                together. */}
             {qrDataUrl && (
               <img className="share-card-qr" src={qrDataUrl} alt="" />
             )}
             {shareUrl && (
               <p className="share-card-url">{displayUrl(shareUrl)}</p>
             )}
+            <p className="share-card-instagram">@afansitengo</p>
             <p className="share-card-cta">
               Escanea o visita el sitio para ayudar
             </p>
-
-            {/* Lowest-priority fact on the card — when it was posted
-                matters far less than what/where/how, so it's pushed
-                to the bottom in the smallest, most muted text. */}
 
             <p className="share-card-trust">
               Confía en tu gente. En momentos así, siempre hay un vecino cerca
@@ -246,8 +243,7 @@ export function useAwarenessShareImage() {
       >
         {ready && (
           <>
-            {/* Logo/branding placeholder — swap for a real asset later. */}
-            <div className="share-card-logo-placeholder" />
+            <img className="share-card-logo" src="/favicon.svg" alt="" />
 
             <h2 className="share-card-headline">Manizales necesita ayuda</h2>
 
@@ -260,6 +256,7 @@ export function useAwarenessShareImage() {
               <img className="share-card-qr" src={qrDataUrl} alt="" />
             )}
             {homeUrl && <p className="share-card-url">{displayUrl(homeUrl)}</p>}
+            <p className="share-card-instagram">@afansitengo</p>
             <p className="share-card-cta">Escanea o visita el sitio</p>
 
             <p className="share-card-trust">

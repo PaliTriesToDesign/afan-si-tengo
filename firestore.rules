@@ -15,11 +15,15 @@ service cloud.firestore {
       allow read: if true;
 
       allow create: if
-        request.resource.data.category in ['supplies', 'volunteer', 'housing', 'blood'] &&
+        request.resource.data.category in ['supplies', 'volunteer', 'housing', 'blood', 'pets'] &&
         request.resource.data.status == 'open' &&
         request.resource.data.description is string &&
         request.resource.data.description.size() > 0 &&
-        request.resource.data.description.size() < 500 &&
+        // Bytes, not characters — MUST match DESCRIPTION_MAX_BYTES in
+        // src/lib/constants.js. Was 500 (too tight for a real
+        // multi-item donation list once emoji/tildes are counted in
+        // UTF-8 bytes — see that constant's comment for the incident).
+        request.resource.data.description.size() <= 3000 &&
         request.resource.data.editToken is string;
 
       // Three kinds of update are allowed, and nothing else:

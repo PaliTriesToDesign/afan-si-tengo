@@ -90,6 +90,12 @@
     "Space Grotesk", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
     sans-serif;
   --tap-min: 48px;
+  /* Single source of truth for the post-card action rail's icon size
+     and gap — .post-card-content's min-height is calc()'d from these
+     two, so the two can never silently drift out of sync if the rail
+     size ever changes again. */
+  --action-icon-size: 32px;
+  --action-icon-gap: 8px;
   font-family:
     -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial,
     sans-serif;
@@ -470,17 +476,37 @@ img {
 /* Reuses .page-header-row (already the back-link + lang-toggle row
    on Donate.jsx) as the shell for a top-right "Donar" shortcut on
    other flow pages — Give Help today, since browsing to help is a
-   natural moment to also consider donating instead/as well. */
+   natural moment to also consider donating instead/as well. Same
+   pill shape as before, same colors as .big-button.donate on the
+   landing page — but permanently in its "hover" fill rather than
+   only on interaction, since this one's job is to catch the eye
+   while scanning the post list, not wait to be noticed. */
 .donate-link-button {
-  background: none;
-  border: 1px solid var(--color-donate);
-  color: var(--color-donate);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--color-donate-neon);
+  border: 1px solid transparent;
+  color: #2b2107;
   border-radius: var(--radius-lg);
   font-size: 13px;
   font-weight: 600;
-  padding: 6px 14px;
+  padding: 6px 24px;
   cursor: pointer;
   min-height: 36px;
+  box-shadow:
+    0 0 16px rgba(255, 201, 60, 0.35),
+    0 0 2px rgba(255, 201, 60, 0.5);
+  transition:
+    transform 0.1s ease,
+    box-shadow 0.1s ease;
+}
+
+.donate-link-button:is(:hover, :active, :focus-visible) {
+  transform: scale(1.04);
+  box-shadow:
+    0 0 24px rgba(255, 201, 60, 0.5),
+    0 0 3px rgba(255, 201, 60, 0.65);
 }
 
 .progress-dots {
@@ -529,6 +555,26 @@ img {
 .field-error {
   color: var(--color-danger-text);
   font-size: 14px;
+}
+
+/* Live byte counter under the description textarea (StepDescription) —
+   quiet by default, amber past 90% of the cap, red once over it. Kept
+   as three plain states rather than a gradient so it's an unambiguous
+   glance, not something you have to study. */
+.char-counter {
+  margin: 6px 0 0;
+  font-size: 12px;
+  color: var(--color-text-muted);
+  text-align: right;
+}
+
+.char-counter-warning {
+  color: var(--color-donate-neon);
+}
+
+.char-counter-over {
+  color: var(--color-danger-text);
+  font-weight: 600;
 }
 
 input[type="text"],
@@ -1032,7 +1078,10 @@ textarea {
 }
 
 .share-card {
-  background: linear-gradient(180deg, #1c1c1e 0%, #3a3a3d 100%);
+  /* Same solid color as the website itself (--color-bg), not a
+     custom gradient — the card should read as an extract of the
+     site, not a separate brand. */
+  background: var(--color-bg);
   color: #fff;
   padding: 80px 64px;
   display: flex;
@@ -1043,12 +1092,14 @@ textarea {
     -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
-.share-card-logo-placeholder {
+/* The site's actual pixel-art mark (public/favicon.svg) — pixelated
+   rendering keeps it crisp scaled up from its native 32x32 instead
+   of going blurry like a photo would. */
+.share-card-logo {
   width: 96px;
   height: 96px;
-  border-radius: 24px;
-  background: rgba(255, 255, 255, 0.15);
-  margin-bottom: 48px;
+  margin-bottom: 40px;
+  image-rendering: pixelated;
 }
 
 .share-card-category {
@@ -1057,7 +1108,16 @@ textarea {
   gap: 16px;
   font-size: 40px;
   font-weight: 600;
-  margin-bottom: 32px;
+  margin-bottom: 20px;
+}
+
+/* Sits above the urgency badge now, not buried at the bottom —
+   still secondary info, so kept small, but bumped from 0.55 to 0.7
+   opacity so it doesn't disappear against the dark background. */
+.share-card-date {
+  font-size: 26px;
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0 0 20px;
 }
 
 .share-card-icon {
@@ -1095,11 +1155,23 @@ textarea {
   margin: 0 0 40px;
 }
 
+/* Card is a fixed 1080x1920 box — toPng only ever captures exactly
+   that box, so a long description doesn't just get cut off itself,
+   it pushes address/contact/QR/footer down past the bottom edge and
+   they vanish from the image entirely. Clamping to 5 lines with an
+   ellipsis guarantees the description can never blow that budget,
+   no matter how long the poster's free text runs. The full text
+   still lives on the live post — the QR/URL/CTA right below this
+   are what points people there. */
 .share-card-description {
   font-size: 38px;
   line-height: 1.4;
   max-width: 880px;
   margin: 0 0 48px;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 5;
+  overflow: hidden;
 }
 
 .share-card-address,
@@ -1128,50 +1200,59 @@ textarea {
   border-radius: 16px;
 }
 
+/* Bottom block, bottom to top of priority: QR + url + Instagram are
+   the "how to find us" facts, one consistent size/weight so they
+   read as a set rather than a jumble of different text treatments.
+   CTA is the one bold line tying them together. Trust message and
+   footer close the card — footer stays the dimmest thing on the
+   card (pure watermark), everything else bumped for contrast. */
 .share-card-qr {
   width: 320px;
   height: 320px;
   background: #fff;
   padding: 16px;
   border-radius: 16px;
-  margin-bottom: 16px;
+  margin-bottom: 20px;
+}
+
+.share-card-url,
+.share-card-instagram {
+  font-size: 28px;
+  color: rgba(255, 255, 255, 0.85);
+  margin: 0 0 10px;
 }
 
 .share-card-url {
-  font-size: 26px;
   font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
-  color: rgba(255, 255, 255, 0.75);
   word-break: break-all;
   max-width: 880px;
-  margin: 0 0 24px;
+}
+
+.share-card-instagram {
+  font-weight: 600;
+  margin-bottom: 44px;
 }
 
 .share-card-cta {
-  font-size: 30px;
-  color: rgba(255, 255, 255, 0.85);
-}
-
-/* Lowest-priority fact on the card, deliberately pushed down and
-   muted — see the ordering note above .share-card-date in the JSX. */
-.share-card-date {
-  font-size: 24px;
-  color: rgba(255, 255, 255, 0.55);
-  margin: 24px 0 0;
+  font-size: 32px;
+  font-weight: 600;
+  color: #fff;
+  margin: 0 0 56px;
 }
 
 .share-card-trust {
-  font-size: 28px;
+  font-size: 30px;
   font-style: italic;
-  color: rgba(255, 255, 255, 0.85);
+  color: rgba(255, 255, 255, 0.9);
   max-width: 800px;
-  line-height: 1.4;
-  margin: 32px 0 0;
+  line-height: 1.45;
+  margin: 0 0 40px;
 }
 
 .share-card-footer {
   font-size: 24px;
-  color: rgba(255, 255, 255, 0.55);
-  margin-top: 16px;
+  color: rgba(255, 255, 255, 0.65);
+  margin: 0;
 }
 
 /* ============================================================
@@ -1316,6 +1397,13 @@ textarea {
      their own font-size before. The badges/location lines below
      have their own explicit sizes, each reduced by the same 20%. */
   font-size: 12.8px;
+  /* Floor, not a cap: matches the action rail's own natural height
+     (4 icon buttons + 3 gaps between them), so every collapsed card
+     lines up at the same height instead of shrinking to fit whatever
+     content happens to be shorter. A card can still render taller
+     than this — a post with a locationNote/contact/wrapped address,
+     or an expanded "Leer más" — but never shorter. */
+  min-height: calc(var(--action-icon-size) * 4 + var(--action-icon-gap) * 3);
 }
 
 .post-card.highlighted {
@@ -1370,6 +1458,30 @@ textarea {
   margin: 4px 0;
 }
 
+/* Description clamp — see PostDescription.jsx. The toggle only
+   renders when the text actually overflows 4 lines at this size, so
+   short descriptions never get a pointless "leer más". */
+.post-description p {
+  margin: 0;
+}
+
+.post-description-clamped {
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.post-description-toggle {
+  background: none;
+  border: none;
+  color: var(--color-give-neon);
+  font-size: 11.2px;
+  font-weight: 600;
+  padding: 4px 0 0;
+  cursor: pointer;
+}
+
 .status-badge {
   display: inline-block;
   font-size: 9.6px;
@@ -1407,7 +1519,7 @@ textarea {
 .action-rail {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--action-icon-gap);
   align-items: center;
 }
 
@@ -1416,8 +1528,8 @@ textarea {
 }
 
 .action-icon-btn {
-  width: 32px;
-  height: 32px;
+  width: var(--action-icon-size);
+  height: var(--action-icon-size);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1675,11 +1787,12 @@ textarea {
   align-items: center;
   gap: 4px;
   font-weight: 600;
-  color: var(--color-donate);
+  color: var(--color-donate-neon);
 }
 
 .org-card-soon {
   border-style: dashed;
+  border-color: var(--color-text-muted);
   background: transparent;
   color: var(--color-text-muted);
 }
@@ -1731,8 +1844,8 @@ textarea {
 }
 
 .lang-option.active {
-  background: var(--color-donate);
-  color: #fff;
+  background: var(--color-donate-neon);
+  color: var(--color-bg);
 }
 
 /* ============================================================

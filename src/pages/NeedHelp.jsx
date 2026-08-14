@@ -18,7 +18,13 @@ import {
   postShareUrl,
   copyToClipboard,
 } from "../lib/share.js";
-import { CATEGORIES, URGENCY_LEVELS, BLOOD_TYPES } from "../lib/constants";
+import { byteLength } from "../lib/text.js";
+import {
+  CATEGORIES,
+  URGENCY_LEVELS,
+  BLOOD_TYPES,
+  DESCRIPTION_MAX_BYTES,
+} from "../lib/constants";
 
 const STEPS = [
   "category",
@@ -75,12 +81,21 @@ export default function NeedHelp() {
     setStepIndex((i) => Math.max(i - 1, 0));
   }
 
+  // Whatever ends up saved to Firestore is combineDescription(items, free
+  // text) — the byte cap has to be checked against THAT combined string,
+  // not just the raw textarea, or a post could pass the client-side gate
+  // and still get rejected server-side once chips are folded in.
+  const finalDescription = combineDescription(form.items, form.description);
+  const descriptionWithinLimit =
+    byteLength(finalDescription) <= DESCRIPTION_MAX_BYTES;
+
   const canProceed = {
     category: !!form.category,
     description:
-      form.category === "blood"
+      (form.category === "blood"
         ? form.bloodTypes.length > 0
-        : form.items.length > 0 || form.description.trim().length > 0,
+        : form.items.length > 0 || form.description.trim().length > 0) &&
+      descriptionWithinLimit,
     location: !!form.location && form.address.trim().length > 0,
     urgency: !!form.urgency,
     contact: true,
@@ -203,6 +218,8 @@ export default function NeedHelp() {
           onBloodTypesChange={(bloodTypes) => update({ bloodTypes })}
           value={form.description}
           onChange={(description) => update({ description })}
+          descriptionBytes={byteLength(finalDescription)}
+          descriptionWithinLimit={descriptionWithinLimit}
           onNext={next}
           disabled={!canProceed}
         />
@@ -292,6 +309,8 @@ function StepDescription({
   onBloodTypesChange,
   value,
   onChange,
+  descriptionBytes,
+  descriptionWithinLimit,
   onNext,
   disabled,
 }) {
@@ -384,6 +403,26 @@ function StepDescription({
         }
         autoFocus={!isBlood && categoryItems.length === 0}
       />
+      {/* Live counter measured the same way the server measures it
+          (UTF-8 bytes, not characters) — see lib/text.js. Warns before
+          the cap, blocks Continuar past it, and says why, instead of
+          letting a post silently fail after "Publicar" like before. */}
+      <p
+        className={`char-counter ${
+          !descriptionWithinLimit
+            ? "char-counter-over"
+            : descriptionBytes > DESCRIPTION_MAX_BYTES * 0.9
+              ? "char-counter-warning"
+              : ""
+        }`}
+      >
+        {descriptionBytes} / {DESCRIPTION_MAX_BYTES} caracteres
+      </p>
+      {!descriptionWithinLimit && (
+        <p className="field-error">
+          Tu descripción es muy larga. Acórtala un poco para poder publicar.
+        </p>
+      )}
       <button
         type="button"
         className="primary-button"

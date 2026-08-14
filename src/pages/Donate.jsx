@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useRouter } from '../lib/router.jsx'
-import { DONATION_ORGS, DONATE_CAUTION } from '../lib/donationOrgs'
+import { DONATION_ORGS, PENDING_ORGS, DONATE_CAUTION } from '../lib/donationOrgs'
 import { ChevronLeft, ChevronRight } from '../components/Icons.jsx'
 
 const TEXT = {
@@ -10,6 +10,7 @@ const TEXT = {
     intro:
       'Esta app no recibe dinero directamente. Aquí tienes organizaciones verificadas que están respondiendo a este terremoto.',
     linkCta: 'Donar',
+    pendingLabel: 'Información próximamente',
     comingSoon: {
       title: 'Más organizaciones próximamente',
       desc: 'Estamos verificando otras campañas activas. Esta lista se irá ampliando.',
@@ -21,6 +22,7 @@ const TEXT = {
     intro:
       'This app never handles money directly. Here are verified organizations responding to this earthquake.',
     linkCta: 'Donate',
+    pendingLabel: 'Info coming soon',
     comingSoon: {
       title: 'More organizations coming soon',
       desc: "We're verifying other active campaigns. This list will keep growing.",
@@ -76,7 +78,7 @@ export default function Donate() {
       <p className="step-hint">{t.intro}</p>
 
       <div className="org-grid">
-        {DONATION_ORGS.map((org) => (
+        {DONATION_ORGS[lang].map((org) => (
           <a
             key={org.name}
             className="org-card"
@@ -85,9 +87,16 @@ export default function Donate() {
             rel="noopener noreferrer"
           >
             <h3>{org.name}</h3>
-            <p className="org-desc">{org[lang]}</p>
+            <p className="org-desc">{org.desc}</p>
             <span className="org-link">{t.linkCta} <ChevronRight /></span>
           </a>
+        ))}
+
+        {PENDING_ORGS.map((org) => (
+          <div key={org.name.es} className="org-card org-card-soon">
+            <h3>{org.name[lang]}</h3>
+            <p className="org-desc">{t.pendingLabel}</p>
+          </div>
         ))}
 
         <div className="org-card org-card-soon">

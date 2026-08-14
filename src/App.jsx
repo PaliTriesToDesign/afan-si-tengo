@@ -14,6 +14,12 @@ const ManagePost = lazy(() => import('./pages/ManagePost.jsx'))
 const SubmitIdea = lazy(() => import('./pages/SubmitIdea.jsx'))
 const ReportBug = lazy(() => import('./pages/ReportBug.jsx'))
 const SuggestOfficialSite = lazy(() => import('./pages/SuggestOfficialSite.jsx'))
+// Dev-only route (see the import.meta.env.DEV guard below) — lets the
+// share cards be styled against dummy data without submitting a real
+// post. import.meta.env.DEV is false in a production build, so this
+// case falls through to Landing there and the page/route is dead code
+// Vite strips out — it never ships.
+const PreviewShareCard = lazy(() => import('./pages/PreviewShareCard.jsx'))
 
 function Screen() {
   const { path } = useRouter()
@@ -33,6 +39,8 @@ function Screen() {
       return <ReportBug />
     case '/sugerir-sitio-oficial':
       return <SuggestOfficialSite />
+    case '/vista-previa-tarjeta':
+      return import.meta.env.DEV ? <PreviewShareCard /> : <Landing />
     default:
       return <Landing />
   }
